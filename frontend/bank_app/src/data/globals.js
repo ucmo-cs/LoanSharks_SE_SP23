@@ -1,0 +1,5 @@
+class globals {
+    
+}
+
+export globals;
