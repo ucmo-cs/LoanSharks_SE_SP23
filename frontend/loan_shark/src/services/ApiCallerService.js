@@ -47,10 +47,4 @@ export class ApiCallerService {
         return this.fetchCall(endpoint, 'delete', data);
     }
 }
-<<<<<<< HEAD:frontend/loan_shark/src/services/ApiCallerService.js
 export default ApiCallerService
-=======
-
-const apiService = new ApiService()
-export default apiService;
->>>>>>> 56f4d23d81d3a9ed6d6f267dc0d589406b6e7069:frontend/bank_app/src/service/ApiCall.js
