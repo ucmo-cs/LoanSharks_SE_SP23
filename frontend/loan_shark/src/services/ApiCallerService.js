@@ -2,11 +2,12 @@ const API_URL = 'http://localhost:8080'
 
 export const USER_NAME_SESSION_ATTRIBUTE_NAME = 'authenticatedUser'
 
-class ApiService {
+export class ApiCallerService {
     getSessionToken() {
         let user = sessionStorage.getItem(USER_NAME_SESSION_ATTRIBUTE_NAME)
         if (user === null) return ''
-        return user.token;
+        console.log("Subsitute login used!!, this is not good practice, CORRECT ME!!!!!!!!!!!!!!!!")
+        return 'TODO, make token!! use user.token ??';
     }
     getHeader(authOveride=false) {
         var token = this.getSessionToken();
@@ -46,4 +47,4 @@ class ApiService {
         return this.fetchCall(endpoint, 'delete', data);
     }
 }
-export default new ApiService()
+export default ApiCallerService
