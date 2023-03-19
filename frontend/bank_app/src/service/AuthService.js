@@ -1,10 +1,10 @@
 
-import {ApiService, USER_NAME_SESSION_ATTRIBUTE_NAME} from './ApiCall'
+import apiService, {USER_NAME_SESSION_ATTRIBUTE_NAME} from './ApiCall'
 
 
 class AuthService {
     doAuth(username, password) {
-        return ApiService.postNoAuth('basicauth', {
+        return apiService.postNoAuth('basicauth', {
             'username': username,
             'password': password //FIXME: ENCRYPT ME!!!!!!!!
         }).then(function (response) {
@@ -28,4 +28,5 @@ class AuthService {
     }
 }
 
-export default new AuthService()
+const authService = new AuthService();
+export default authService;

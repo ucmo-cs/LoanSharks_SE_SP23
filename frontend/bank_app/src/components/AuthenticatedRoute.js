@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Route, Redirect } from 'react-dom'
+import { Route, Redirect } from 'react-router-dom'
 import AuthService from '../service/AuthService';
 
 class AuthenticatedRoute extends Component {

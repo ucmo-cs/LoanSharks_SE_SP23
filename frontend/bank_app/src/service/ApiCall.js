@@ -46,4 +46,6 @@ class ApiService {
         return this.fetchCall(endpoint, 'delete', data);
     }
 }
-export default new ApiService()
+
+const apiService = new ApiService()
+export default apiService;
