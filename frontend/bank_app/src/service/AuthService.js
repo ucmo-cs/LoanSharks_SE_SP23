@@ -1,5 +1,5 @@
 
-import {ApiService, USER_NAME_SESSION_ATTRIBUTE_NAME} from 'ApiCall'
+import {ApiService, USER_NAME_SESSION_ATTRIBUTE_NAME} from './ApiCall'
 
 
 class AuthService {
