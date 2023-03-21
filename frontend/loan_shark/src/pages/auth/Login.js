@@ -11,19 +11,15 @@ function Login() {
         password:'',
       });
     
-    
       const changeValue=(e)=>{
-        console.log(e);
         setLogin({
          ...user, [e.target.name]:e.target.value  
         });
-        console.log(e.target.name + " name "  );
-        console.log(e.target.value + " value " );
       }
     
        const submitUser = (e)=>{
             e.preventDefault();
-            AuthService.login(user);
+            AuthService.login(user.username, user.password);
        };
     
       return (

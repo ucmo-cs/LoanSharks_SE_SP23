@@ -25,6 +25,9 @@ public class BankUser {
 
     private String username;
 
+    //TODO hide JWT token from user input?
+    private String awt_token;
+
     @OneToMany(mappedBy = "bankuser")
     private List<Statement> statements = new ArrayList<>();
 

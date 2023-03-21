@@ -3,26 +3,20 @@ const API_URL = 'http://localhost:8080'
 export const USER_NAME_SESSION_ATTRIBUTE_NAME = 'authenticatedUser'
 
 export class ApiCallerService {
-    getSessionToken() {
-        let user = sessionStorage.getItem(USER_NAME_SESSION_ATTRIBUTE_NAME)
-        if (user === null) return ''
-        console.log("Subsitute login used!!, this is not good practice, CORRECT ME!!!!!!!!!!!!!!!!")
-        return 'TODO, make token!! use user.token ??';
-    }
-    getHeader(authOveride=false) {
-        var token = this.getSessionToken();
+    static getHeader(authOveride=false) {
         var ret =  {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            //'Origin': '', 
             //'Host': 'TODO'
         };
         if(!authOveride) {
-            ret['Authorization'] = `Bearer ${token}`;
+            let user = JSON.parse(sessionStorage.getItem(USER_NAME_SESSION_ATTRIBUTE_NAME));
+            ret['token'] = user.awt_token;
+            ret['id'] = user.id;
         }  
         return ret;
     }
-    fetchCall(endpoint, type, data, authOveride=false) {
+    static fetchCall(endpoint, type, data, authOveride=false) {
         return fetch(`${API_URL}/${endpoint}`,
             {
                 method: type,
@@ -31,20 +25,19 @@ export class ApiCallerService {
             },
         );
     }
-    get(endpoint, data) {
+    static get(endpoint, data) {
         return this.fetchCall(endpoint, 'get', data);
     }
-    post(endpoint,data) {
+    static post(endpoint,data) {
         return this.fetchCall(endpoint, 'post', data);
     }
-    postNoAuth(endpoint, data) {
-        return this.fetchCall(endpoint, 'post', data);
+    static postNoAuth(endpoint, data) {
+        return this.fetchCall(endpoint, 'post', data, true);
     }
-    put(endpoint, data) {
+    static put(endpoint, data) {
         return this.fetchCall(endpoint, 'put', data);
     }
-    delete(endpoint, data) {
+    static delete(endpoint, data) {
         return this.fetchCall(endpoint, 'delete', data);
     }
 }
-export default ApiCallerService

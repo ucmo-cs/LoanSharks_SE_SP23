@@ -13,17 +13,14 @@ function Join() {
     
     
       const changeValue=(e)=>{
-        console.log(e);
         setJoin({
          ...user, [e.target.name]:e.target.value  
         });
-        console.log(e.target.name + " name "  );
-        console.log(e.target.value + " value " );
       }
     
        const submitUser = (e)=>{
             e.preventDefault();
-            AuthService.createUser(user);
+            AuthService.createUser(user.username, user.password);
        };
     
       return (

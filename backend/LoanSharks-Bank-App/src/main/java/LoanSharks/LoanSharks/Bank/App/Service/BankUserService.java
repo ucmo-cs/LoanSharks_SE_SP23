@@ -3,6 +3,8 @@ package LoanSharks.LoanSharks.Bank.App.Service;
 import LoanSharks.LoanSharks.Bank.App.Domain.BankUser;
 import LoanSharks.LoanSharks.Bank.App.Domain.Statement;
 import LoanSharks.LoanSharks.Bank.App.Repository.BankUserRepository;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,8 +40,24 @@ public class BankUserService {
         //TODO heighten security with encryption
         List<BankUser> list = this.getUserByUsername(username);
         if(list.size() == 1 && list.get(0).getPassword().equals(password)) {
-            return list.get(0);
+            BankUser user = list.get(0);
+            String token = Jwts.builder()
+                    .setId(""+user.getId())
+                    .setSubject("login")
+                    .compact();
+
+            user.setAwt_token(token);
+            bankUserRepository.save(user);
+            return user;
         }
         return null;
+    }
+    public boolean checkAuth(int id, String token) {
+        BankUser user = this.bankUserRepository.findById(id).get();
+        return (user != null && user.getAwt_token().equals(token));
+    }
+    public BankUser debugCheckAuth(int id, String token) {
+        BankUser user = this.bankUserRepository.findById(id).get();
+        return user;
     }
 }
