@@ -484,6 +484,7 @@ function MonthlyCalendar() {
                                 {Array.from({length: 7}, (_, j) => (
                                     <Day
                                         day={i * 7 + j + 1 - startDayOfWeek}
+                                        key={j}
                                         month={month} 
                                         statements={statements}
                                         year={year}
