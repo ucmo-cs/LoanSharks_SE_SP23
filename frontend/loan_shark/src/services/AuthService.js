@@ -13,6 +13,7 @@ export class AuthService {
     }
     static createUser(username, password) {
         return ApiCallerService.postNoAuth('bankuser/join', {'username': username, 'password': password})
+        .then(res => res.json())
         .then(res => {
             //side affect, should maybe not have here.
             window.location.href = "/login";

@@ -21,7 +21,11 @@ public class BankUserController {
 
         System.out.println("userId " + bankUser.getUsername());
         System.out.println("userPassword " + bankUser.getPassword());
-        return new ResponseEntity<>(bankUserService.create(bankUser), HttpStatus.CREATED);
+        BankUser user = bankUserService.create(bankUser);
+        if (user != null) {
+            return new ResponseEntity<>(user, HttpStatus.CREATED);
+        }
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 
     @CrossOrigin

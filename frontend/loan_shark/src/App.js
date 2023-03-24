@@ -21,7 +21,6 @@ function Authenticated() {
     return <>
       <Switch>
         <Route path="/join" exact={true} component={Join}/>
-        <Route path="/" exact={true} component={Home}/>
         <Route path="/debug/Calculator" exact={true} component={Calculator}/>
         <Route path="/debug/Calendar" exact={true} component={Calendar}/>
         <Route path="/debug/Statements" exact={true} component={Statements}/>
@@ -32,7 +31,7 @@ function Authenticated() {
   }
   else {
    return <>
-      <Route path="/" exact={true} component={Home}/>
+      <Route path="/" exact={true} component={Calendar}/>
       <Route path="/Calculator" exact={true} component={Calculator}/>
       <Route path="/Calendar" exact={true} component={Calendar}/>
       <Route path="/Statements" exact={true} component={Statements}/>

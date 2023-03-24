@@ -22,7 +22,9 @@ public class BankUserService {
     public BankUser create(BankUser bankUser){
         List<BankUser> others = this.getUserByUsername(bankUser.getUsername());
         if (!others.isEmpty()) {
-            if(others.size() == 1 && others.get(0).getId() != bankUser.getId()) {
+            if(others.get(0).getId() == bankUser.getId()) {
+                return bankUserRepository.save(bankUser);
+            } else {
                 return null;
             }
         }
