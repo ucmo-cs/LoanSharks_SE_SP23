@@ -24,6 +24,27 @@
   color: white;
 }
 
+.mb-3{
+  margin: left;
+  padding-top: 50px;
+  padding-left: 90px;
+  width: 30%;
+  
+}
+
+
+.submitBut1{
+  position: absolute;
+  padding-left: 8.4%;
+  padding-top: 50px;
+}
+
+.loanEstimateDisplay{
+  font-size: small;
+  padding-top: 25px;
+}
+
+
 .App-link {
   color: #61dafb;
 }
