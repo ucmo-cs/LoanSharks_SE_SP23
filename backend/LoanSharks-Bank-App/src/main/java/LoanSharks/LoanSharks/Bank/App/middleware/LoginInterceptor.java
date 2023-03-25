@@ -47,4 +47,7 @@ public class LoginInterceptor implements HandlerInterceptor {
                                 Object handler,
                                 Exception exception) throws Exception {
     }
+    public static int getUserId(HttpServletRequest request) {
+        return Integer.parseInt(request.getHeader("id"));
+    }
 }

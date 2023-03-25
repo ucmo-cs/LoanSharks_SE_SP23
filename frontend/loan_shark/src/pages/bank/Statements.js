@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Button } from 'react-bootstrap';
 import { Event } from "@mui/icons-material";
+import { Modal } from '../../components/Modal';
+import { StatementService } from '../../services/StatementService';
 
 const style = {
     amount: {
@@ -60,7 +63,30 @@ function Statements() {
     const formatCurrency = (amt) => {
        return `${amt < 0 ? "-" : ""}$${Math.abs(amt).toFixed(2)}`;
     }
-    
+    const [createModalControls, setCreateModal] = useState({show:false});
+    //useEffect(() => {
+        function closeModal() {
+            setCreateModal ({show: false});
+        }
+        function openModal() {
+            setCreateModal ({show: true});
+        }
+
+        function createNewStatement() {
+            StatementService.createStatement({example:"hi mom"})
+            /*
+                from return statement
+                .then(function() {
+            */
+            setCreateModal ({show: false});
+            /*
+                }).catch(function() {
+                    //TODO, error message inside Modal.
+                });
+            */
+        }
+    //});
+
     const getData = () => {
         const statements = [
             { name: "Income", amount: 300, date: new Date(2023, 2, 3), planned: true, frequency: "weekly" },
@@ -124,6 +150,12 @@ function Statements() {
                     </li>     
                 ))}
             </ul>
+            <Button variant="primary" type="submit" onClick={openModal}>
+                Add Statement 
+            </Button>
+            <Modal show={createModalControls.show} closeCall={closeModal} formFinish={createNewStatement}>
+                TEST
+            </Modal>
         </div>
     );
 }

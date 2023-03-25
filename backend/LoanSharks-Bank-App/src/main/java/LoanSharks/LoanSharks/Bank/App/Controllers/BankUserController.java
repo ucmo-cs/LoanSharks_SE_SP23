@@ -1,6 +1,7 @@
 package LoanSharks.LoanSharks.Bank.App.Controllers;
 import LoanSharks.LoanSharks.Bank.App.Domain.BankUser;
 import LoanSharks.LoanSharks.Bank.App.Service.BankUserService;
+import LoanSharks.LoanSharks.Bank.App.middleware.LoginInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,7 +43,7 @@ public class BankUserController {
     @CrossOrigin
     @PostMapping("/debug/authcheck")
     public ResponseEntity<BankUser> debug(HttpServletRequest request) {
-        int id = Integer.parseInt(request.getHeader("id"));
+        int id = LoginInterceptor.getUserId(request);
         String token = request.getHeader("token");
         return new ResponseEntity<>(bankUserService.debugCheckAuth(id, token),HttpStatus.OK);
     }
