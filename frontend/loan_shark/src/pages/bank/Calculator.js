@@ -26,6 +26,11 @@ function Calculator() {
   const[monthAmount, setMonthAmount] = useState(0)
   const[interestAmount, setInterestAmount] = useState(0)
   const[loanans,setLoanans]=useState(0);
+  const[loanTotal, setLoanTotal] = useState(0);
+  const[loanMonth, setLoanMonth] = useState(0);
+  const [newBalance, setNewBalance] = useState(0);
+  const monthlyGoal = localStorage.getItem("monthlyGoal");
+  const monthlyBalance = localStorage.getItem("monthlyBalance");
 
   const changeValue=(e)=>{
     console.log(e);
@@ -40,10 +45,29 @@ function Calculator() {
     e.preventDefault();
     const r = interestAmount/1200;
     const n = monthAmount; // # of payments
-    const M = (loanAmount*r*Math.pow(1+r,n))/ (Math.pow(1+r,n)-1);
-    setLoanans((e) => [M.toFixed(2)]);
+    const loanans = (loanAmount*r*Math.pow(1+r,n))/ (Math.pow(1+r,n)-1);
+    const Q = loanans * n;
+    const calculatedBalance = monthlyBalance - loanans;
+    setLoanans((e) => [loanans.toFixed(2)]);
+    setLoanTotal((e) => [Q.toFixed(2)]);
+    setLoanMonth((e) => [calculatedBalance.toFixed(2)]);
+    setNewBalance(() => [calculatedBalance]);
   }
 
+  const loanAdvice = () =>{
+    if(monthlyBalance === null){
+      return
+    }
+    if(newBalance < 0){
+      return (<><h1 className='loanEstimateDisplay'>We strongly advise against this loan as it will put your monthly balance below 0.</h1>
+      <h1 className='loanEstimateDisplay'>It is recommended to either decrease the loan amount or pay over more months.</h1></>)
+    }
+    if(newBalance < monthlyGoal){
+      return (<><h1 className='loanEstimateDisplay'>We advise against this loan as it will take you below your monthly savings goal.</h1>
+      <h1 className='loanEstimateDisplay'>It is recommended to either decrease the loan amount or pay over more months.</h1></>)
+    }
+    return (<h1 className='loanEstimateDisplay'>This is an acceptable loan amount as you will remain above your monthly savings goal.</h1>)
+  }
 
   return (
     <> 
@@ -70,9 +94,14 @@ function Calculator() {
         Calculate
       </Button>
 <h1 className='loanEstimateDisplay'>Estimated payment per month: ${parseFloat(loanans)}</h1>
-
-      
+<h1 className='loanEstimateDisplay'>Estimated total payment:  ${parseFloat(loanTotal)}</h1>
+<h1 className='loanEstimateDisplay'>Monthly savings goal: ${monthlyGoal}</h1>
+<h1 className='loanEstimateDisplay'>Monthly balance: ${monthlyBalance}</h1>
+<h1 className='loanEstimateDisplay'>New balance if loan taken: ${parseFloat(loanMonth)}</h1>
+{loanAmount===0?null: loanAdvice()}
       </div>
+
+
 </Form>
 
 

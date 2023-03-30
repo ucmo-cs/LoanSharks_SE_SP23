@@ -296,6 +296,14 @@ function MonthlyCalendar() {
         }
     }, [month, year])
 
+    useEffect(() => {
+        const savingsGoal = savingsGoals.find(sg => sg.month === month && sg.year === year);
+        const balance = 500;
+
+        localStorage.setItem("monthlyGoal", savingsGoal.goal);
+        localStorage.setItem("monthlyBalance", balance);
+    },[])
+
     const getMonthName = (m) => { // Months in JS are zero-indexed (why?!?!!)
         const monthNames = [
             "January", "February", "March", "April", "May", "June", "July",
@@ -342,7 +350,7 @@ function MonthlyCalendar() {
 
         for (let i = 0; i < statements.length; i++)
             balance += statements[i].amount;
-
+            localStorage.setItem("monthlyBalance", balance);
         return balance;
     }
 
@@ -361,6 +369,7 @@ function MonthlyCalendar() {
                 goals.push({month, year, goal: newMonthlySavingsGoal});
 
             setSavingsGoals(goals);
+            localStorage.setItem("monthlyGoal", JSON.stringify(goals[idx].goal));
         }
 
         setEditSavingsGoal(false);

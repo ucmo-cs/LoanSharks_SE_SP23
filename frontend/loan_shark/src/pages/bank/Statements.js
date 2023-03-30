@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from 'react-bootstrap';
-import { Event } from "@mui/icons-material";
+import { Form, Button } from 'react-bootstrap';
+import { Event} from "@mui/icons-material";
 import { Modal } from '../../components/Modal';
 import { StatementService } from '../../services/StatementService';
 
@@ -154,7 +154,21 @@ function Statements() {
                 Add Statement 
             </Button>
             <Modal show={createModalControls.show} closeCall={closeModal} formFinish={createNewStatement}>
-                TEST
+                <Form>
+                <Form.Group controlId="formBasicEmailLogin">
+                    <Form.Label>Name</Form.Label>
+                    <Form.Control type="text" placeholder="Enter Name"/>
+                </Form.Group>
+                <Form.Group controlId="formBasicEmailLogin">
+                    <Form.Label>Amount</Form.Label>
+                    <Form.Control type="text" placeholder="Enter Amount"/>
+                </Form.Group>
+                <div class="p-2"></div>
+                <Form.Group controlId="formBasicEmailLogin">
+                    <Form.Label>Date</Form.Label>
+                    <Form.Control type="text" placeholder="Enter Date"/>
+                </Form.Group>
+                </Form>
             </Modal>
         </div>
     );
