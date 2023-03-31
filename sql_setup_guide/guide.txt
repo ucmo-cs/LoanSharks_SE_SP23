@@ -4,6 +4,19 @@ https://dev.mysql.com/downloads/installer/
 
 for linux, you can run this
 
+sudo apt-get update
+sudo apt install mysql-server
+sudo apt install mysql-client-core-8.0
+sudo apt install mysql #linux may prefer the snap version)
+
+for debian based installs (ubuntu), you can get in via this
+sudo mysql --defaults-file=/etc/mysql/debian.cnf
+
+#to set the mysql password, do this and edit username/password. or you can log into mysql shell (Using command above) and create a new user that way.
+sudo gedit /etc/mysql/debian.cnf
+
+create user 'spring_admin'@'%' identified by 'change12345678911553'; -- Creates the user
+
 
 #once you have mysql, ssh into mysql
 
