@@ -22,7 +22,7 @@ public class BankUserService {
     public BankUser create(BankUser bankUser){
         List<BankUser> others = this.getUserByUsername(bankUser.getUsername());
         if (!others.isEmpty()) {
-            if(others.get(0).getId() == bankUser.getId()) {
+            if(others.get(0).getUserId() == bankUser.getUserId()) {
                 return bankUserRepository.save(bankUser);
             } else {
                 return null;
@@ -44,7 +44,7 @@ public class BankUserService {
         if(list.size() == 1 && list.get(0).getPassword().equals(password)) {
             BankUser user = list.get(0);
             String token = Jwts.builder()
-                    .setId(""+user.getId())
+                    .setId(""+user.getUserId())
                     .setSubject("login")
                     .compact();
 

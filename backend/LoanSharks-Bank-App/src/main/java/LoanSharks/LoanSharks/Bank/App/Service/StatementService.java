@@ -22,11 +22,9 @@ public class StatementService {
     @Transactional
     public Statement updateOrCreate(Integer user_id, Statement statement){
 
-	public Statement createStatement(Statement statement, Integer userId) {
+		BankUser bankUser = bankUserRepository.findById(user_id).orElseThrow();
 
-		BankUser bankUser;
-
-        statement.setBankuser(bankUser);
+        statement.setBankUser(bankUser);
         return statementRepository.save(statement);
     }
     @Transactional
@@ -53,36 +51,18 @@ public class StatementService {
 //
 //		return statementRepository.save(statement);
 //	}
-
-	public Statement getStatementById(Integer statementId, Integer userId) {
-
-    }
     public void deleteStatement(int user_id, int id) {
         Statement del = statementRepository.findById(id).orElseThrow();
-        if(del.getBankuser().getId() != user_id) {
+        if(del.getBankUser().getUserId() != user_id) {
             throw new IllegalArgumentException("User id does not match to passed id");
         }
         statementRepository.delete(del);
     }
-
-		return statementRepository.findById(statementId).orElseThrow(
-				() -> new IllegalArgumentException("statement id does not exist"));
-	}
-
 	public List<Statement> getAllStatements(Integer userId) {
 
 		BankUser bankUser = bankUserRepository.findById(userId).orElseThrow(
 				() -> new IllegalArgumentException("bankUser id does not exist"));
 
 		return bankUser.getStatements();
-	}
-
-	public void deleteStatement(Integer statementId, Integer userId) {
-
-		bankUserRepository.findById(userId).orElseThrow(
-				() -> new IllegalArgumentException("bankUser id does not exist"));
-
-		statementRepository.delete(statementRepository.findById(statementId).orElseThrow(
-				() -> new IllegalArgumentException("statement id does not exist")));
 	}
 }

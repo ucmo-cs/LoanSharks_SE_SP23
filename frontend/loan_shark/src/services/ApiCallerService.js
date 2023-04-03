@@ -12,7 +12,7 @@ export class ApiCallerService {
         if(!authOveride) {
             let user = JSON.parse(sessionStorage.getItem(USER_NAME_SESSION_ATTRIBUTE_NAME));
             ret['token'] = user.awt_token;
-            ret['id'] = user.id;
+            ret['userId'] = user.userId;
         }  
         return ret;
     }

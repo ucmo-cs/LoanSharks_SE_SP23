@@ -25,11 +25,13 @@ public class StatementController {
     public ResponseEntity<?> save(HttpServletRequest request, @RequestBody Statement statement) {
         return new ResponseEntity<>(statementService.updateOrCreate(LoginInterceptor.getUserId(request), statement), HttpStatus.CREATED);
     }
+    @CrossOrigin
     @DeleteMapping("/statements/{id}")
     public ResponseEntity<?> save(HttpServletRequest request, @PathVariable int id) {
         statementService.deleteStatement(LoginInterceptor.getUserId(request), id);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
+    @CrossOrigin
     @GetMapping("/statements")
     public ResponseEntity<?> getAll(HttpServletRequest request) {
         return new ResponseEntity<>(statementService.getAll(LoginInterceptor.getUserId(request)), HttpStatus.OK);
@@ -37,17 +39,18 @@ public class StatementController {
 
     @CrossOrigin
     @GetMapping("/statements/{start_date}/{end_date}")
-    public ResponseEntity<?> getStatementByName(
+    public ResponseEntity<?> getStatementByDateRange(
+            HttpServletRequest request,
             @PathVariable("start_date") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start_date,
             @PathVariable("last_date") @DateTimeFormat(pattern = "yyyy-MM-dd") Date last_date
     ) {
 
-        return new ResponseEntity<>(statementService.getStatementByName("TEST"), HttpStatus.OK);
+        return new ResponseEntity<>(statementService.getStatementByDateRange(LoginInterceptor.getUserId(request),start_date, last_date), HttpStatus.OK);
 
     }
-    @CrossOrigin
-    @GetMapping("/statements/?byName={name}")
-    public ResponseEntity<?> getStatementByName(@PathVariable("name") String name) {
+//    @CrossOrigin
+//    @GetMapping("/statements/?byName={name}")
+//    public ResponseEntity<?> getStatementByName(@PathVariable("name") String name) {
 
 //	// intentional duplicate of 'createStatement()' -- JpaRepository's 'save()' updates statement if id already exists
 //	@ResponseBody
@@ -56,23 +59,4 @@ public class StatementController {
 //
 //		return new ResponseEntity<>(statementService.updateStatement(statement, userId), HttpStatus.CREATED);
 //	}
-
-	@GetMapping("/user/statements/{id}")
-	public ResponseEntity<?> getStatementById(@PathVariable("id") Integer statementId, Integer userId) {
-
-		return new ResponseEntity<>(statementService.getStatementById(statementId, userId), HttpStatus.OK);
-	}
-
-	@GetMapping("/user/statements")
-	public ResponseEntity<?> getAllStatements(Integer userId) {
-
-		return new ResponseEntity<>(statementService.getAllStatements(userId), HttpStatus.OK);
-	}
-
-	@DeleteMapping("/user/statements/{id}")
-	public ResponseEntity<?> deleteStatement(@PathVariable("id") @RequestBody Statement statement, Integer userId) {
-
-		statementService.deleteStatement(statement.getId(), userId);
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-	}
 }

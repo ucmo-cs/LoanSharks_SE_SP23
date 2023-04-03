@@ -155,11 +155,9 @@ function Statements() {
     useEffect(() => {
         StatementService.getAllStatement().then(function(loadedStatements) {
             clearStatements();
-            let balance = 0; // Placeholder starting balance
 
             for (let i = 0; i < loadedStatements.length; i++) {
                 var loadedStatement = loadedStatements[i];
-                balance += loadedStatement.amount;
                 addStatement(loadedStatement);
             }
         });
@@ -172,9 +170,6 @@ function Statements() {
                         <div style={style.listItemHeader}>
                             <span style={style.date}>
                                 {statement.date.toLocaleDateString("en-US")}
-                            </span>
-                            <span style={style.balance}>
-                                Balance: {formatCurrency(statement.amount)}
                             </span>
                             <Button type="button" variant="danger" size="sm" style={style.inlineButton} onClick={function(){markForDelete(statement.id)}}>
                                 delete

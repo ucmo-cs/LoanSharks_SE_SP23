@@ -17,7 +17,8 @@ public class BankUserController {
 
 	private final BankUserService bankUserService;
 
-	@PostMapping("/user/join")
+	@CrossOrigin
+	@PostMapping("/bankuser/join")
 	public ResponseEntity<BankUser> save(@RequestBody BankUser bankUser) {
 
 		System.out.println("userId " + bankUser.getUsername());
@@ -29,7 +30,8 @@ public class BankUserController {
 		return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
 
-	@PostMapping("/user/login")
+	@CrossOrigin
+	@PostMapping("/bankuser/login")
 	public ResponseEntity<BankUser> login(@RequestBody BankUser bankUser) {
 		//todo, setup better management of this, maybe use 404 HttpStatus.NOT_FOUND
 		BankUser user = bankUserService.checkLogin(bankUser.getUsername(), bankUser.getPassword());
@@ -39,6 +41,7 @@ public class BankUserController {
 		return new ResponseEntity<>(user, HttpStatus.OK);
 	}
 
+	@CrossOrigin
 	@PostMapping("/debug/authcheck")
 	public ResponseEntity<BankUser> debug(HttpServletRequest request) {
 		int id = LoginInterceptor.getUserId(request);
