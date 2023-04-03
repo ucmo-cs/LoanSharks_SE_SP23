@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class StatementService {
     private final BankUserRepository bankUserRepository;
 
     @Transactional
-    public Statement create(Integer user_id, Statement statement){
+    public Statement updateOrCreate(Integer user_id, Statement statement){
 
         BankUser bankUser;
 
@@ -28,13 +29,30 @@ public class StatementService {
         statement.setBankuser(bankUser);
         return statementRepository.save(statement);
     }
+    @Transactional
+    public List<Statement> getStatementByDateRange(int user_id, Date start, Date end){
 
+        return statementRepository.findInDateRange(user_id, start, end);
+
+    }
+
+    @Transactional
+    public List<Statement> getAll(int user_id){
+        return statementRepository.getAll(user_id);
+    }
 
     @Transactional
     public List<Statement> getStatementByName(String name){
 
         return statementRepository.findByName(name);
 
+    }
+    public void deleteStatement(int user_id, int id) {
+        Statement del = statementRepository.findById(id).orElseThrow();
+        if(del.getBankuser().getId() != user_id) {
+            throw new IllegalArgumentException("User id does not match to passed id");
+        }
+        statementRepository.delete(del);
     }
 
 }

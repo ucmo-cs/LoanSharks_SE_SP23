@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 //import javax.persistence.*;
 
 @Data
@@ -20,8 +23,9 @@ public class Statement {
     private String name;
 
     private String amount;
-
-    private String date;
+    @Temporal(TemporalType.DATE)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date date;
 
     private boolean planned;
 
