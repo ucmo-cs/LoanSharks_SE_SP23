@@ -11,20 +11,20 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class StatementService {
 
-    private final StatementRepository statementRepository;
-    private final BankUserRepository bankUserRepository;
+	private final StatementRepository statementRepository;
+	private final BankUserRepository bankUserRepository;
 
     @Transactional
     public Statement updateOrCreate(Integer user_id, Statement statement){
 
-        BankUser bankUser;
+	public Statement createStatement(Statement statement, Integer userId) {
 
-        bankUser = bankUserRepository.findById(user_id).orElseThrow(()
-                ->new IllegalArgumentException("bankUser id does not exists"));
+		BankUser bankUser;
 
         statement.setBankuser(bankUser);
         return statementRepository.save(statement);
@@ -41,10 +41,20 @@ public class StatementService {
         return statementRepository.getAll(user_id);
     }
 
-    @Transactional
-    public List<Statement> getStatementByName(String name){
+// intentional duplicate of 'createStatement()' -- JpaRepository's 'save()' updates statement if id already exists
+//	public Statement updateStatement(Statement statement, Integer userId) {
+//
+//		BankUser bankUser;
+//
+//		bankUser = bankUserRepository.findById(userId).orElseThrow(
+//				() -> new IllegalArgumentException("bankUser id does not exist"));
+//
+//		statement.setBankUser(bankUser);
+//
+//		return statementRepository.save(statement);
+//	}
 
-        return statementRepository.findByName(name);
+	public Statement getStatementById(Integer statementId, Integer userId) {
 
     }
     public void deleteStatement(int user_id, int id) {
@@ -55,4 +65,24 @@ public class StatementService {
         statementRepository.delete(del);
     }
 
+		return statementRepository.findById(statementId).orElseThrow(
+				() -> new IllegalArgumentException("statement id does not exist"));
+	}
+
+	public List<Statement> getAllStatements(Integer userId) {
+
+		BankUser bankUser = bankUserRepository.findById(userId).orElseThrow(
+				() -> new IllegalArgumentException("bankUser id does not exist"));
+
+		return bankUser.getStatements();
+	}
+
+	public void deleteStatement(Integer statementId, Integer userId) {
+
+		bankUserRepository.findById(userId).orElseThrow(
+				() -> new IllegalArgumentException("bankUser id does not exist"));
+
+		statementRepository.delete(statementRepository.findById(statementId).orElseThrow(
+				() -> new IllegalArgumentException("statement id does not exist")));
+	}
 }

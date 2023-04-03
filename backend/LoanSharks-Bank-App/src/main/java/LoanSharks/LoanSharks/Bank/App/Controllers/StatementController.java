@@ -13,12 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 @RestController
-@CrossOrigin
-@RequestMapping
+@CrossOrigin // tells the browser that cross-origin requests are safe
 @RequiredArgsConstructor
 public class StatementController {
 
-    private final StatementService statementService;
+	private final StatementService statementService;
 
     @CrossOrigin
     @PostMapping("/statements/create")
@@ -50,8 +49,30 @@ public class StatementController {
     @GetMapping("/statements/?byName={name}")
     public ResponseEntity<?> getStatementByName(@PathVariable("name") String name) {
 
-        return new ResponseEntity<>(statementService.getStatementByName(name), HttpStatus.OK);
+//	// intentional duplicate of 'createStatement()' -- JpaRepository's 'save()' updates statement if id already exists
+//	@ResponseBody
+//	@PostMapping("/statements/{id}/edit")
+//	public ResponseEntity<?> updateStatement(@PathVariable("id") @RequestBody Statement statement, Integer userId) {
+//
+//		return new ResponseEntity<>(statementService.updateStatement(statement, userId), HttpStatus.CREATED);
+//	}
 
-    }
+	@GetMapping("/user/statements/{id}")
+	public ResponseEntity<?> getStatementById(@PathVariable("id") Integer statementId, Integer userId) {
 
+		return new ResponseEntity<>(statementService.getStatementById(statementId, userId), HttpStatus.OK);
+	}
+
+	@GetMapping("/user/statements")
+	public ResponseEntity<?> getAllStatements(Integer userId) {
+
+		return new ResponseEntity<>(statementService.getAllStatements(userId), HttpStatus.OK);
+	}
+
+	@DeleteMapping("/user/statements/{id}")
+	public ResponseEntity<?> deleteStatement(@PathVariable("id") @RequestBody Statement statement, Integer userId) {
+
+		statementService.deleteStatement(statement.getId(), userId);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
 }

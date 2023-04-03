@@ -32,8 +32,8 @@ public class Statement {
     private String frequency;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "userId")
     @JsonIgnore
-    private BankUser bankuser;
+    private BankUser bankUser;
 }
 

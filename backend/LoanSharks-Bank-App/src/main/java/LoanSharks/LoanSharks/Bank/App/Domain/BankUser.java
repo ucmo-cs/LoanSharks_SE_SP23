@@ -1,12 +1,10 @@
 package LoanSharks.LoanSharks.Bank.App.Domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.*;
-//import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,17 +16,18 @@ public class BankUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Integer id;
-
-    private String password;
+    @Column(name = "userId")
+    private Integer userId;
 
     private String username;
+
+    private String password;
 
     //TODO hide JWT token from user input?
     private String awt_token;
 
-    @OneToMany(mappedBy = "bankuser")
+    // transplant -> BankUserRepository?
+    @OneToMany(mappedBy = "bankUser")
     private List<Statement> statements = new ArrayList<>();
 
 }

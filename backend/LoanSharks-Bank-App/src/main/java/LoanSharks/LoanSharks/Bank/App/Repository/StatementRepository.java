@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 @Repository
-public interface StatementRepository extends JpaRepository<Statement,Integer> {
+public interface StatementRepository extends JpaRepository<Statement, Integer> {
 
     public List<Statement> findByName(String name);
 
