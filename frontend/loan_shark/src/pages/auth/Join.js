@@ -7,7 +7,7 @@ const ErrorForm = props => {
     let { error } = props;
 
     if (error) {
-        return (<div class="row text-bold pl-2 text-danger text-bold"><p>{error}</p></div>);
+        return (<div className="row text-bold pl-2 text-danger text-bold"><p>{error}</p></div>);
     }
 };
 
@@ -29,7 +29,7 @@ function Join() {
 
         const statement = {
             name: "Initial",
-            amount: parseInt(initialBalance),
+            amount: parseFloat(initialBalance),
             date: toYYYYMMDD(new Date()),
             planned: false,
             frequency: null
@@ -63,16 +63,16 @@ function Join() {
     }
     
     return (
-        <div class="row justify-content-lg-center h-100 p-5">
-            <div class="col-lg-5 h-100 d-flex" style={{flexDirection: "column"}}>
-                <div class="text-center lg-3 mb-4">
+        <div className="row justify-content-lg-center h-100 p-5">
+            <div className="col-lg-5 h-100 d-flex" style={{flexDirection: "column"}}>
+                <div className="text-center lg-3 mb-4">
                     <h2>Sign up</h2>
                 </div>
                 <div style={{flex: 0.8, display: "flex", justifyContent: "stretch", alignItems: "center", width: "100%"}}>
                     {accountCreated ? (
                         <div>
                             <p style={{textAlign: "center", fontWeight: "bold", marginBottom: 32, fontSize: 18}}>
-                                Account creation successful. To get started, enter an initial balance.
+                                Account creation is successful. To get started, enter an initial balance.
                             </p>
                             <Form onSubmit={saveInitialBalance}>
                                 <div style={{display: "flex", alignItems: "center"}}>
@@ -83,11 +83,10 @@ function Join() {
                                             placeholder="Enter starting balance"
                                             required
                                             style={{ border: "none", padding: 0, marginLeft: 8, boxShadow: "none" }}
-                                            type="number"
                                             value={initialBalance}
                                         />
                                     </div>
-                                    <div class="text-center" style={{marginLeft: 16}}>
+                                    <div className="text-center" style={{marginLeft: 16}}>
                                         <Button variant="primary" style={{height: 42}} type="submit">
                                             Save 
                                         </Button>
@@ -109,7 +108,7 @@ function Join() {
                                         required
                                     />
                                 </Form.Group>
-                                <div class="p-2"></div>
+                                <div className="p-2"></div>
                                 <Form.Group controlId="formBasicPasswordJoin">
                                     <Form.Label style={{marginBottom: 4}}>Password</Form.Label>
                                     <Form.Control
@@ -120,7 +119,7 @@ function Join() {
                                         required
                                     />
                                 </Form.Group>
-                                <div class="mt-4 text-center">
+                                <div className="mt-4 text-center">
                                     <Button variant="primary" style={{width: 100}} type="submit">
                                         Join 
                                     </Button>

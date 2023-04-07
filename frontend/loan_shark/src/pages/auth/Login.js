@@ -7,7 +7,7 @@ function Login() {
         let { error } = props;
     
         if (error) {
-            return (<div class="row pl-2 text-danger text-bold"><p>{error}</p></div>);
+            return (<div className="row pl-2 text-danger text-bold"><p>{error}</p></div>);
         }
     };
     const[user, setLogin] = useState({
@@ -31,9 +31,9 @@ function Login() {
        };
     
       return (
-        <div class="row justify-content-lg-center h-100 p-5">
-            <div class="col-lg-5 h-100 d-flex" style={{flexDirection: "column"}}>
-                <div class="text-center lg-3 mb-4">
+        <div className="row justify-content-lg-center h-100 p-5">
+            <div className="col-lg-5 h-100 d-flex" style={{flexDirection: "column"}}>
+                <div className="text-center lg-3 mb-4">
                     <h2>Login</h2>
                 </div>
                 <div style={{flex: 0.8, display: "flex", justifyContent: "stretch", alignItems: "center", width: "100%"}}>
@@ -42,12 +42,12 @@ function Login() {
                             <Form.Label style={{marginBottom: 4}}>Username</Form.Label>
                             <Form.Control type="text" placeholder="Enter Username" onChange = {changeValue} name="username" />
                         </Form.Group>
-                        <div class="p-2"></div>
+                        <div className="p-2"></div>
                         <Form.Group controlId="formBasicPasswordLogin">
                             <Form.Label style={{marginBottom: 4}}>Password</Form.Label>
                             <Form.Control type="password" placeholder="***********" onChange = {changeValue} name="password"/>
                         </Form.Group>
-                        <div class="mt-4 text-center">
+                        <div className="mt-4 text-center">
                             <Button variant="primary" style={{width: 100}} type="submit">
                                 Log in 
                             </Button>

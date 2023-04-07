@@ -282,7 +282,6 @@ function Statements() {
                                     onChange={changeNewStatementValue}
                                     placeholder="Enter Amount"
                                     style={{ border: "none", padding: 0, marginLeft: 8, boxShadow: "none" }}
-                                    type="number"
                                     required
                                 />
                             </div>

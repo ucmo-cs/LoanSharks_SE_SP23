@@ -22,7 +22,7 @@ public class Statement {
 
     private String name;
 
-    private int amount;
+    private double amount;
 
     private String date;
 

@@ -122,7 +122,7 @@ function Calculator() {
                 <div style={{width: 1, height: 475, backgroundColor: "#0002", marginRight: 32}}></div>
 				<div style={{width: 400}}>
 					<div style={{marginBottom: 16}}>
-						<p class="text-muted" style={{fontSize: 18}}>Estimated payment</p>
+						<p className="text-muted" style={{fontSize: 18}}>Estimated payment</p>
 						<div style={{display: "flex"}}>
 							<div style={{flex: 1, textAlign: "left", flexShrink: 0}}>
 								<h3 style={{fontWeight: "bold", margin: 0}}>

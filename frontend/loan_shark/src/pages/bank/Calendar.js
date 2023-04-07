@@ -281,7 +281,7 @@ function MonthlyCalendar() {
                     parseInt(parts[2])
                 );
 
-                return { ...statement, amount: parseInt(statement.amount), date };
+                return { ...statement, amount: parseFloat(statement.amount), date };
             }));
         });
     }, []);
@@ -357,7 +357,8 @@ function MonthlyCalendar() {
 
         for (let i = 0; i < statements.length; i++)
             balance += statements[i].amount;
-            localStorage.setItem("monthlyBalance", balance);
+
+        localStorage.setItem("monthlyBalance", balance);
         return balance;
     }
 
