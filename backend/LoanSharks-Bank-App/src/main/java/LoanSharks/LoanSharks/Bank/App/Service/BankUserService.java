@@ -34,14 +34,14 @@ public class BankUserService {
 
     @Transactional
     public List<BankUser> getUserByUsername(String name){
-
         return bankUserRepository.findByUsername(name);
-
     }
+
     public BankUser checkLogin(String username, String password) {
         //TODO heighten security with encryption
         List<BankUser> list = this.getUserByUsername(username);
-        if(list.size() == 1 && list.get(0).getPassword().equals(password)) {
+
+        if (list.size() == 1 && list.get(0).getPassword().equals(password)) {
             BankUser user = list.get(0);
             String token = Jwts.builder()
                     .setId(""+user.getUserId())
@@ -52,6 +52,7 @@ public class BankUserService {
             bankUserRepository.save(user);
             return user;
         }
+
         return null;
     }
     public boolean checkAuth(int id, String token) {

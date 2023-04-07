@@ -42,9 +42,9 @@ function Authenticated() {
 
 function App() {
   return (
-    <div>
+    <div style={{height: "100vh", display: "flex", flexDirection: "column"}}>
       <Header/>
-      <Container>
+      <Container style={{flex: 1}}>
         <Authenticated/>
       </Container>    
     </div>

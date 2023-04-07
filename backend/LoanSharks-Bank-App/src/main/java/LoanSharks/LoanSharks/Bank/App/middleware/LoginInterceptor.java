@@ -18,29 +18,36 @@ public class LoginInterceptor implements HandlerInterceptor {
 
 	@Override
 	public boolean preHandle(HttpServletRequest request,
-	                         HttpServletResponse response,
-	                         Object handler) throws Exception {
+							 HttpServletResponse response,
+							 Object handler) throws Exception {
 		if ("OPTIONS".equals(request.getMethod())) {
 			response.setStatus(HttpServletResponse.SC_OK);
 			return true;
 		}
-		int id = Integer.parseInt(request.getHeader("userId"));
+
+		String idString = request.getHeader("userId");
 		String token = request.getHeader("token");
-		return bankUserService.checkAuth(id, token);
+
+		if (idString != null && token != null) {
+			int id = Integer.parseInt(idString);
+			return bankUserService.checkAuth(id, token);
+		}
+
+		return false;
 	}
 
 	@Override
 	public void postHandle(HttpServletRequest request,
-	                       HttpServletResponse response,
-	                       Object handler,
-	                       ModelAndView modelAndView) throws Exception {
+						   HttpServletResponse response,
+						   Object handler,
+						   ModelAndView modelAndView) throws Exception {
 	}
 
 	@Override
 	public void afterCompletion(HttpServletRequest request,
-	                            HttpServletResponse response,
-	                            Object handler,
-	                            Exception exception) throws Exception {
+								HttpServletResponse response,
+								Object handler,
+								Exception exception) throws Exception {
 	}
 
 	public static int getUserId(HttpServletRequest request) {

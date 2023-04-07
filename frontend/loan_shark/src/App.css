@@ -57,6 +57,12 @@
     transform: rotate(360deg);
   }
 }
+
+.bs-shadow:focus-within {
+  box-shadow: 0 0 0 0.25rem rgba(0, 90, 255, 0.25);
+  transition: ease-in 0.1s all;
+}
+
 #main-navbar2 {
   background-color: #006749!important;
 }

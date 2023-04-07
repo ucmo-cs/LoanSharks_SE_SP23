@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Event, ExpandLess, ExpandMore } from "@mui/icons-material"
 import { Button, FormControl } from 'react-bootstrap';
+import { StatementService } from '../../services/StatementService';
 
 const style = {
     balanceComparisonContainer: {
@@ -253,6 +254,7 @@ function MonthlyCalendar() {
     const [editSavingsGoal, setEditSavingsGoal] = useState(false);
     const [monthlySavingsGoalText, setMonthlySavingsGoalText] = useState("");
     const [monthlySavingsGoal, setMonthlySavingsGoal] = useState(0);
+    const [statements, setStatements] = useState([]);
 
     // Placeholder data
     const [savingsGoals, setSavingsGoals] = useState([
@@ -269,19 +271,20 @@ function MonthlyCalendar() {
 
     const past = year < now.getFullYear() || (month < now.getMonth() && year === now.getFullYear());
 
-    // Placeholder data
-    const statements = [
-        { name: "Income", amount: 300, date: new Date(2023, 2, 3), planned: true, frequency: "weekly" },
-        { name: "Expense", amount: -15, date: new Date(2023, 2, 6), planned: false },
-        { name: "Expense", amount: -63, date: new Date(2023, 2, 7), planned: false },
-        { name: "Income", amount: 300, date: new Date(2023, 2, 10), planned: true, frequency: "weekly" },
-        { name: "Bill", amount: -700, date: new Date(2023, 2, 14), planned: true, frequency: "monthly" },
-        { name: "Income", amount: 300, date: new Date(2023, 2, 17), planned: true, frequency: "weekly" },
-        { name: "Deposit", amount: 20, date: new Date(2023, 2, 18), planned: false },
-        { name: "Deposit", amount: 7, date: new Date(2023, 2, 20), planned: false },
-        { name: "Withdrawal", amount: -100, date: new Date(2023, 2, 22), planned: false },
-        { name: "Income", amount: 300, date: new Date(2023, 2, 24), planned: true, frequency: "weekly" },
-    ];
+    useEffect(() => {
+        StatementService.getAllStatement().then(result =>{
+            setStatements(result.map(statement => {
+                const parts = statement.date.split("-");
+                const date = new Date(
+                    parseInt(parts[0]), 
+                    parseInt(parts[1]) - 1,
+                    parseInt(parts[2])
+                );
+
+                return { ...statement, amount: parseInt(statement.amount), date };
+            }));
+        });
+    }, []);
 
     // When the month or year changes, show the corresponding monthly savings goal
     useEffect(() => {
@@ -302,7 +305,7 @@ function MonthlyCalendar() {
 
         localStorage.setItem("monthlyGoal", savingsGoal.goal);
         localStorage.setItem("monthlyBalance", balance);
-    },[])
+    }, [])
 
     const getMonthName = (m) => { // Months in JS are zero-indexed (why?!?!!)
         const monthNames = [
@@ -334,7 +337,12 @@ function MonthlyCalendar() {
 
     // Calculate the target balance for the current day
     const getTargetBalance = () => {
-        const startingBalance = 500;
+        let startingBalance = 0;
+        const statementsBeforeFirst = statements.filter(statement => statement.date < new Date(now.getFullYear(), now.getMonth(), 1));
+
+        for (const statement of statementsBeforeFirst)
+            startingBalance += statement.amount;
+
         const currentMonthlySavingsGoal = savingsGoals.find(sg => 
             sg.month === now.getMonth() && sg.year === now.getFullYear());
 
@@ -344,9 +352,8 @@ function MonthlyCalendar() {
         return startingBalance + (day / numDays) * (currentMonthlySavingsGoal?.goal || 0);
     }
 
-    // Placeholder balance data
     const getBalance = () => {
-        let balance = 500;
+        let balance = 0;
 
         for (let i = 0; i < statements.length; i++)
             balance += statements[i].amount;

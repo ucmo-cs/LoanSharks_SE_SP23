@@ -20,11 +20,13 @@ public class BankUserController {
 	@CrossOrigin
 	@PostMapping("/bankuser/join")
 	public ResponseEntity<BankUser> save(@RequestBody BankUser bankUser) {
-
 		System.out.println("userId " + bankUser.getUsername());
 		System.out.println("userPassword " + bankUser.getPassword());
+
 		BankUser user = bankUserService.create(bankUser);
+
 		if (user != null) {
+			bankUserService.checkLogin(user.getUsername(), user.getPassword());
 			return new ResponseEntity<>(user, HttpStatus.CREATED);
 		}
 		return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);

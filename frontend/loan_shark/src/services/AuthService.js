@@ -13,12 +13,11 @@ export class AuthService {
     }
     static createUser(username, password) {
         return ApiCallerService.postNoAuth('bankuser/join', {'username': username, 'password': password})
-        .then(res => res.json())
-        .then(res => {
-            //side affect, should maybe not have here.
-            window.location.href = "/login";
-            return res;
-        })
+            .then(res => res.json())
+            .then(res=> {sessionStorage.setItem(USER_NAME_SESSION_ATTRIBUTE_NAME, JSON.stringify(res))})
+            .then(res => {
+                return res;
+            })
     }
     static logout() {
         sessionStorage.removeItem(USER_NAME_SESSION_ATTRIBUTE_NAME);

@@ -22,10 +22,9 @@ public class Statement {
 
     private String name;
 
-    private String amount;
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date date;
+    private int amount;
+
+    private String date;
 
     private boolean planned;
 
@@ -36,4 +35,3 @@ public class Statement {
     @JsonIgnore
     private BankUser bankUser;
 }
-
