@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { Event} from "@mui/icons-material";
 import { Modal } from '../../components/Modal';
@@ -68,22 +68,31 @@ const style = {
 }
 
 function Statements() {
+    const countStorage = useRef({amount: 0});
+    const adjustTotal= async (amount) => {
+        countStorage.amount += parseFloat(amount);
+    }
+    const clearTotal = () => {
+        countStorage.amount = 0;
+    }
     const[statements, setStatement] = useState(
         []
     );
     const addStatement=(statement)=>{
         statement.date = new Date(statement.date);
         setStatement(oldStatements => [...oldStatements, statement].sort((a, b) => a.date < b.date));
-    
+        adjustTotal(statement.amount);
     }
     const clearStatements=()=> {
         setStatement(oldStatements => []);
+        clearTotal();
     }
     const deleteStatement=(id)=> {
         setStatement(oldStatements => {
             for (let i = 0; i < oldStatements.length; i++) {
                 if (oldStatements[i].id == id) {
-                    oldStatements.splice(i, 1);
+                    var removed = oldStatements.splice(i, 1);
+                    adjustTotal(-removed[0].amount);
                     return oldStatements;
                 }
             }
@@ -105,14 +114,24 @@ function Statements() {
         name:'',
         amount:'',
         date:'',
+        planned: false,
+        expense: false,
+        frequency: null,
       });
     
     const changeNewStatementValue=(e)=>{
+        console.log(e.target);
         setStatementCreate({
          ...newStatement, [e.target.name]:e.target.value  
         });
       }
-
+    
+      const changeNewStatementCheckboxValue=(e)=>{
+        console.log(e.target.checked);
+        setStatementCreate({
+         ...newStatement, [e.target.name]:e.target.checked  
+        });
+      }
     const formatCurrency = (amt) => {
        return `${amt < 0 ? "-" : ""}$${Math.abs(amt).toFixed(2)}`;
     }
@@ -139,7 +158,10 @@ function Statements() {
         });
     }
     function createNewStatement() {
-        console.log(newStatement);
+        if (newStatement.expense) {
+            newStatement.amount = -newStatement.amount;
+        }
+        delete newStatement.expense;
         StatementService.createStatement(newStatement)
             .then(function(res) {
                 addStatement(res);
@@ -195,6 +217,20 @@ function Statements() {
                         </div>
                     </li>     
                 ))}
+                <li key='total' style={style.listItemContainer}>
+                    <div style={{...style.listItemHeader, backgroundColor: countStorage.amount < 0 ? "#f00" : "#0b0"}}>
+                    </div>
+                    <div style={style.listItemContent}>
+                        <div style={style.listItemContent.left}>
+                            <p style={{margin: 0}}>Total</p>
+                        </div>
+                        <div style={style.listItemContent.right}>
+                            <p style={{...style.amount, color: countStorage.amount < 0 ? "#f00" : "#0b0"}}>
+                                {formatCurrency(countStorage.amount)}
+                            </p>
+                        </div>
+                    </div>
+                </li> 
             </ul>
             <div style={style.buttonsWrapper}>
                 <Button variant="primary" type="submit" onClick={openModal} >
@@ -217,11 +253,38 @@ function Statements() {
                     <Form.Label>Date</Form.Label>
                     <Form.Control type="date" placeholder="Enter Date"  onChange = {changeNewStatementValue} name="date"/>
                 </Form.Group>
+                <div className="p-2"></div>
+                <Form.Group controlId="formBasicStatementPlanned">
+                    <div className="row">
+                        <div className='col-3'>
+                            <Form.Label>Planned?</Form.Label>
+                            <Form.Check onChange = {changeNewStatementCheckboxValue} name="planned"/>
+                        </div>
+                        <div className='col-3'>
+                            <Form.Label>is expense?</Form.Label>
+                            <Form.Check onChange = {changeNewStatementCheckboxValue} name="expense"/>
+                        </div>
+                    </div>
+                </Form.Group>
+                <div className="p-2"></div>
+                <Form.Group controlId="formBasicStatementRange" style={{...[], display: newStatement.planned ? "block" : "none"}}>
+                    <Form.Label>Frequency</Form.Label>
+                    <Form.Select placeholder="Enter Date"  onChange = {changeNewStatementValue} name="frequency">
+                        <option value="" disabled>please select an option</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">weekly</option>
+                        <option value="bi-weekly">bi-weekly</option>
+                        <option value="monthly">monthly</option>
+                        <option value="bi-monthly">bi-monthly</option>
+                        <option value="yearly">yearly</option>
+                        <option value="bi-yearly">bi-yearly</option>
+                    </Form.Select>
+                </Form.Group>
                 </Form>
                 <ErrorForm error={errorCreateStatement.error} />
             </Modal>
             
-            <Modal title="Delete this record?" show={deleteModalControls.show} closeCall={closeDeleteRequestModal} formFinish={acceptDelete}>
+            <Modal title="Delete this record?" okText="Delete" okButtonVariant="danger" show={deleteModalControls.show} closeCall={closeDeleteRequestModal} formFinish={acceptDelete}>
                 are you sure you want to delete this record?
             </Modal>
         </div>
