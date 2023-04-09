@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Event, ExpandLess, ExpandMore } from "@mui/icons-material"
 import { Button, FormControl } from 'react-bootstrap';
 import { StatementService } from '../../services/StatementService';
+import { dateStringToDate } from '../../services/utils';
 
 const style = {
     balanceComparisonContainer: {
@@ -183,15 +184,7 @@ const Day = ({day, month, statements, year}) => {
 
     const maxDay = new Date(year, month + 1, 0).getDate();
     const visible = day <= maxDay && day > 0;
-
-    const isToday = () => {
-        if (day < 0 || day > maxDay)
-            return false;
-
-        return date.toDateString() === now.toDateString();
-    }
-
-    const today = isToday();
+    const today = visible && date.toDateString() === now.toDateString();
     const past = date.setHours(0, 0, 0, 0) < now.setHours(0, 0, 0, 0);
 
     // Only show the statements that occured on this day
@@ -273,16 +266,11 @@ function MonthlyCalendar() {
 
     useEffect(() => {
         StatementService.getAllStatement().then(result =>{
-            setStatements(result.map(statement => {
-                const parts = statement.date.split("-");
-                const date = new Date(
-                    parseInt(parts[0]), 
-                    parseInt(parts[1]) - 1,
-                    parseInt(parts[2])
-                );
-
-                return { ...statement, amount: parseFloat(statement.amount), date };
-            }));
+            setStatements(result.map(statement => ({
+                ...statement,
+                amount: parseFloat(statement.amount), 
+                date: dateStringToDate(statement.date)
+            })));
         });
     }, []);
 
@@ -475,7 +463,7 @@ function MonthlyCalendar() {
                                 <h5>${balance.toFixed(2)}</h5>
                             </div>
                         </div>
-                        <p style={{...style.balanceDiffText, color: balanceDiff >= 0 ? "#0d0" : "#f50"}}>
+                        <p style={{...style.balanceDiffText, color: balanceDiff >= 0 ? "#0b0" : "#f70"}}>
                             {balanceDiff >= 0 ? "Exceeding" : "Below"} Budget by ${Math.abs(balanceDiff).toFixed(2)}
                         </p>
                     </div>

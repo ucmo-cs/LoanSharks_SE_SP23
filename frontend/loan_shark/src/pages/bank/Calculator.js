@@ -1,6 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
+import InputWithAdornment from '../../components/InputWithAdornment';
 import { StatementService } from '../../services/StatementService';
+import { dateStringToDate, toCurrency } from '../../services/utils';
+
+const style = {
+    payment: {
+        container: { marginBottom: 16 },
+        heading: { fontSize: 18 },
+        content: {
+            flexShrink: 0,
+            text: { fontWeight: "bold", fontSize: 26, margin: 0 }
+        }
+    },
+    separator: { width: 1, height: 475, backgroundColor: "#0002", marginRight: 32 },
+    total: {
+        minus: { fontSize: 14, marginRight: 8, verticalAlign: "top" },
+        row: {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+            fontSize: 16,
+            lineHeight: 1.25
+        },
+        rowIndented: { paddingLeft: 25 },
+        rowBottom: { paddingBottom: 8, borderBottom: "1px solid #000" },
+        rowValue: { fontWeight: "bold", fontFamily: "monospace" },
+        savingsResultMsg: { textTransform: "uppercase", fontWeight: "bold", fontSize: 14 }
+    }
+}
 
 function Calculator() {
     const [balance, setBalance] = useState(0);
@@ -26,19 +55,12 @@ function Calculator() {
                 let balance = 0;
                 let startingBalance = 0;
         
-                for (const statement of res) {
+                res.forEach(statement => {
                     balance += statement.amount;
-                    
-                    const parts = statement.date.split("-");
-                    const date = new Date(
-                        parseInt(parts[0]), 
-                        parseInt(parts[1]) - 1,
-                        parseInt(parts[2])
-                    );
-
-                    if (date < new Date().setDate(1))
+    
+                    if (dateStringToDate(statement.date) < new Date().setDate(1))
                         startingBalance += statement.amount;
-                }
+                })
         
                 setBalance(balance);
                 setMonthlySavings(balance - startingBalance);
@@ -48,7 +70,7 @@ function Calculator() {
     const calculate = (e) => {
         e.preventDefault();
 
-        const p = parseFloat(loanAmount);
+        const p = parseFloat(loanAmount.replace(/,/g, ""));
         const n = parseFloat(months);
         const r = parseFloat(interest) / 1200;
         const monthly = p * r * (Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1));
@@ -63,11 +85,11 @@ function Calculator() {
 
     const getAfterPaymentSavingsMessage = () => {
         if (monthlySavingsAfterPayment < 0)
-            return {color: "#f00", text: "Monthly Savings Are Negative"}
+            return { color: "#f00", text: "Savings Are Negative" }
         else if (monthlyGoal > monthlySavingsAfterPayment)
-            return {color: "#f70", text: "Monthly Savings Drops Below Goal"}
+            return { color: "#f70", text: "Savings Drop Below Goal" }
         else
-            return {color: "#0b0", text: "Monthly Savings Goal Is Still Met"}
+            return { color: "#0b0", text: "Monthly Goal Is Still Met" }
     }
 
     const message = getAfterPaymentSavingsMessage();
@@ -75,22 +97,19 @@ function Calculator() {
 	return (
 		<div className="p-4"> 
 			<h1 className='col-12 p-0 mb-5 text-center'>Calculate Your Loan Estimate</h1>
-			<div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
+			<div className="d-flex justify-content-center align-items-center">
 				<Form onSubmit={calculate} style={{marginRight: 32, width: 375}}>
-					<Form.Group className="mb-3 col-12 p-0" controlId="formBasicEmail">
+					<Form.Group className="mb-3 col-12 p-0" controlId="amount">
 						<Form.Label>Loan Amount</Form.Label>
-						<div className="d-flex align-items-center rounded bs-shadow" style={{padding: "8px 12px", border: "1px solid #ced4da"}}>
-                            <span className="text-muted">$</span>
-                            <Form.Control
-                                onChange={e => setLoanAmount(e.target.value)}
-                                placeholder="Enter Amount"
-                                required
-                                style={{ border: "none", padding: 0, marginLeft: 8, boxShadow: "none" }}
-                                value={loanAmount}
-                            />
-                        </div>
+                        <InputWithAdornment
+                            adornment="$"
+                            onChange={e => setLoanAmount(e.target.value)}
+                            placeholder="Enter Amount"
+                            required
+                            value={loanAmount}
+                        />
 					</Form.Group>
-					<Form.Group className="mb-3 col-12 p-0" controlId="formBasicPassword">
+					<Form.Group className="mb-3 col-12 p-0" controlId="term">
 						<Form.Label>Loan term (months)</Form.Label>
 						<Form.Control
                             placeholder="Enter month term"
@@ -100,87 +119,96 @@ function Calculator() {
                             value={months}
                         />
 					</Form.Group>
-					<Form.Group className="mb-5 col-12 p-0" controlId="formBasicPassword">
+					<Form.Group className="mb-5 col-12 p-0" controlId="interest">
 						<Form.Label>Interest Rate</Form.Label>
-						<div className="d-flex align-items-center rounded bs-shadow" style={{padding: "8px 12px", border: "1px solid #ced4da"}}>
-                            <Form.Control
-                                onChange={e => setInterest(e.target.value)}
-                                placeholder="Enter interest rate"
-                                style={{ border: "none", padding: 0, marginLeft: 8, boxShadow: "none" }}
-                                required
-                                value={interest}
-                            />
-                            <span className="text-muted">%</span>
-                        </div>
+                        <InputWithAdornment
+                            adornment="%"
+                            adornmentPlacement="right"
+                            onChange={e => setInterest(e.target.value)}
+                            placeholder="Enter interest rate"
+                            required
+                            value={interest}
+                        />
 					</Form.Group>
-					<div style={{textAlign: "center"}}>
-						<Button variant="primary" type="submit" style={{width: "100%"}}>
+					<div className="d-grid gap-2">
+						<Button variant="primary" type="submit">
 							Calculate
 						</Button>
 					</div>
 				</Form>
-                <div style={{width: 1, height: 475, backgroundColor: "#0002", marginRight: 32}}></div>
+                <div style={style.separator} />
 				<div style={{width: 400}}>
-					<div style={{marginBottom: 16}}>
-						<p className="text-muted" style={{fontSize: 18}}>Estimated payment</p>
-						<div style={{display: "flex"}}>
-							<div style={{flex: 1, textAlign: "left", flexShrink: 0}}>
-								<h3 style={{fontWeight: "bold", margin: 0}}>
-                                    ${monthlyPayment.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                                </h3>
+					<div style={style.payment.container}>
+						<p className="text-muted" style={style.payment.heading}>
+                            Estimated payment
+                        </p>
+						<div className="d-flex justify-content-between">
+							<div style={style.payment.content}>
+								<p style={style.payment.content.text}>{toCurrency(monthlyPayment)}</p>
 								<p>Monthly</p>
 							</div>
-							<div style={{flex: 1, textAlign: "right", flexShrink: 0}}>
-								<h3 style={{fontWeight: "bold", margin: 0}}>
-                                    ${totalPayment.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                                </h3>
+							<div style={{ ...style.payment.content, textAlign: "right" }}>
+								<p style={style.payment.content.text}>{toCurrency(totalPayment)}</p>
 								<p>Total</p>
 							</div>
 						</div>
 					</div>
-                    <div style={{marginBottom: 32}}>
-                        <p style={{marginBottom: 8, display: "flex", justifyContent: "space-between", fontSize: 17}}>
-                            <span style={{marginLeft: 27}}>Current balance :</span>
-                            <span style={{fontWeight: "bold"}}>{balance.toFixed(2)} <span className='text-muted'>$</span></span>
-                        </p>
-                        <p style={{marginBottom: 8, paddingBottom: 8, display: "flex", justifyContent: "space-between", fontSize: 17, borderBottom: "1px solid #000"}}>
-                            <span style={{margin: 0}}>
-                                <span style={{fontSize: 14, marginRight: 8, verticalAlign: "top"}}>—</span> Monthly payment:
+                    <div className="mb-4">
+                        <p style={{ ...style.total.row, ...style.total.rowIndented }}>
+                            <span>Current balance:</span>
+                            <span style={style.total.rowValue}>
+                                {balance.toFixed(2)} <span className='text-muted'>$</span>
                             </span>
-                            <span style={{fontWeight: "bold"}}>{monthlyPayment.toFixed(2)} <span className='text-muted'>$</span></span>
                         </p>
-                        <p style={{marginBottom: 8, display: "flex", justifyContent: "space-between", fontSize: 17}}>
+                        <p style={{ ...style.total.row, ...style.total.rowBottom }}>
+                            <span>
+                                <span style={style.total.minus}>—</span> Monthly payment:
+                            </span>
+                            <span style={style.total.rowValue}>
+                                {monthlyPayment.toFixed(2)} <span className='text-muted'>$</span>
+                            </span>
+                        </p>
+                        <p style={style.total.row}>
                             <span>Balance after payment:</span>
-                            <span style={{fontWeight: "bold"}}>{(balanceAfterPayment).toFixed(2)} <span className='text-muted'>$</span></span>
+                            <span style={style.total.rowValue}>
+                                {(balanceAfterPayment).toFixed(2)} <span className='text-muted'>$</span>
+                            </span>
                         </p>
                     </div>
                     <div>
-                        <p style={{marginBottom: 8, display: "flex", justifyContent: "space-between", fontSize: 17}}>
-                            <span style={{marginLeft: 27}}>Monthly savings:</span>
-                            <span style={{fontWeight: "bold"}}>{monthlySavings.toFixed(2)} <span className='text-muted'>$</span></span>
-                        </p>
-                        <p style={{marginBottom: 8, paddingBottom: 8, display: "flex", justifyContent: "space-between", fontSize: 17, borderBottom: "1px solid #000"}}>
-                            <span style={{margin: 0}}>
-                                <span style={{fontSize: 14, marginRight: 8, verticalAlign: "top"}}>—</span> Monthly payment:
+                        <p style={{ ...style.total.row, ...style.total.rowIndented }}>
+                            <span>Monthly savings:</span>
+                            <span style={style.total.rowValue}>
+                                {monthlySavings.toFixed(2)} <span className='text-muted'>$</span>
                             </span>
-                            <span style={{fontWeight: "bold"}}>{monthlyPayment.toFixed(2)} <span className='text-muted'>$</span></span>
                         </p>
-                        <p style={{marginBottom: 8, display: "flex", justifyContent: "space-between", fontSize: 17}}>
-                            <span style={{marginLeft: calculated ? 27 : 0}}>Monthly savings after payment:</span>
-                            <span style={{fontWeight: "bold"}}>{(monthlySavingsAfterPayment).toFixed(2)} <span className='text-muted'>$</span></span>
+                        <p style={{ ...style.total.row, ...style.total.rowBottom }}>
+                            <span>
+                                <span style={style.total.minus}>—</span> Monthly payment:
+                            </span>
+                            <span style={style.total.rowValue}>
+                                {monthlyPayment.toFixed(2)} <span className='text-muted'>$</span>
+                            </span>
                         </p>
-                        <div style={{visibility: calculated ? "visible" : "collapse"}}>
-                            <p style={{marginBottom: 8, paddingBottom: 8, display: "flex", justifyContent: "space-between", fontSize: 17, borderBottom: "1px solid #000"}}>
-                                <span style={{margin: 0}}>
-                                    <span style={{fontSize: 14, marginRight: 8, verticalAlign: "top"}}>—</span> Monthly savings goal:
+                        <p style={{ ...style.total.row, ...style.total.rowIndented }}>
+                            <span>Monthly savings after payment:</span>
+                            <span style={style.total.rowValue}>
+                                {(monthlySavingsAfterPayment).toFixed(2)}
+                                <span className='text-muted'> $</span>
+                            </span>
+                        </p>
+                        <div style={{visibility: calculated ? "visible" : "hidden"}}>
+                            <p style={{ ...style.total.row, ...style.total.rowBottom }}>
+                                <span>
+                                    <span style={style.total.minus}>—</span> Monthly savings goal:
                                 </span>
-                                <span style={{fontWeight: "bold"}}>{monthlyGoal.toFixed(2)} <span className='text-muted'>$</span></span>
+                                <span style={style.total.rowValue}>
+                                    {monthlyGoal.toFixed(2)} <span className='text-muted'>$</span>
+                                </span>
                             </p>
-                            <p style={{marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 17, color: message.color}}>
-                                <span style={{fontSize: 15, fontWeight: "bold", textTransform: "uppercase", maxWidth: 150}}>
-                                    {message.text}
-                                </span>
-                                <span style={{fontWeight: "bold"}}>
+                            <p style={{ ...style.total.row, color: message.color }}>
+                                <span style={style.total.savingsResultMsg}>{message.text}</span>
+                                <span style={style.total.rowValue}>
                                     {(monthlySavingsAfterPayment - monthlyGoal).toFixed(2)}
                                     <span> $</span>
                                 </span>

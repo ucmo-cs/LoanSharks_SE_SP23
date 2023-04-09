@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Button, Modal, Popover, OverlayTrigger } from 'react-bootstrap';
-import { Check, Event } from "@mui/icons-material";
+import { Event } from "@mui/icons-material";
 import { StatementService } from '../../services/StatementService';
+import InputWithAdornment from '../../components/InputWithAdornment';
+import { dateStringToDate, toCurrency, toYYYYMMDD } from '../../services/utils';
 
 const style = {
     amount: {
@@ -70,34 +72,31 @@ const style = {
         margin: "24px auto 48px",
         listStyleType: "none"
     },
-    statementContainer: {
-        width: 310,
-        marginBottom: 8,
-        border: "1px solid #0003"
-    },
-    statementContent: {
-        display: "flex", 
-        alignItems: "center",
-        padding: "2px 8px",
-        left: {
-            flex: 7
+    statement: {
+        container: {
+            width: 310,
+            marginBottom: 8,
+            border: "1px solid #0003"
         },
-        right: {
-            flex: 3,
-            textAlign: "right"
+        header: {
+            width: "100%",
+            height: 24,
+            borderBottom: "1px solid #0003",
+            position: "relative"
+        },
+        content: {
+            display: "flex", 
+            alignItems: "center",
+            padding: "2px 8px",
+            left: {
+                flex: 7
+            },
+            right: {
+                flex: 3,
+                textAlign: "right"
+            }
         }
-    },
-    statementHeader: {
-        display: "flex", 
-        padding: "2px 8px",
-        borderBottom : "1px solid #0003"
     }
-}
-
-const toYYYYMMDD = (date) => {
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${date.getFullYear()}-${month}-${day}`;
 }
 
 const StatementDelete = ({onClick, onDelete}) => {
@@ -124,13 +123,7 @@ const StatementDelete = ({onClick, onDelete}) => {
             rootClose
             trigger="click" 
         >
-            <Button
-                onClick={onClick}
-                size="sm"
-                style={style.delete}
-            >
-                Delete
-            </Button>
+            <Button onClick={onClick} size="sm" style={style.delete}>Delete</Button>
         </OverlayTrigger>
     )
 }
@@ -156,6 +149,7 @@ function Statements() {
 
         const statement = {
             ...newStatement,
+            amount: parseFloat(newStatement.amount.replace(/,/g, "")),
             planned: newStatement.frequency !== "none",
             frequency: newStatement.frequency
         };
@@ -186,15 +180,11 @@ function Statements() {
     }
 
     const deleteStatement = (id) => {
-        StatementService.deleteStatement(deleteOverlayId)
+        StatementService.deleteStatement(id)
             .then((res) => {
-                setStatements(statements.filter(statement => statement.id !== deleteOverlayId));
+                setStatements(statements.filter(statement => statement.id !== id));
                 setDeleteOverlayId(null);
             });
-    }
-
-    const formatCurrency = (amt) => {
-       return `${amt < 0 ? "-" : ""}$${Math.abs(amt).toFixed(2)}`;
     }
        
     const openModal = () => {
@@ -202,19 +192,13 @@ function Statements() {
         setShowAddStatementModal(true);
     }
 
-    const sortedStatements = statements.slice().map(statement => {
-        const parts = statement.date.split("-");
-        const date = new Date(
-            parseInt(parts[0]), 
-            parseInt(parts[1]) - 1,
-            parseInt(parts[2])
-        );
-
-        return {...statement, date}
-    }).sort((a, b) => b.date - a.date);
+    const sortedStatements = statements.slice().map(statement => ({
+        ...statement,
+        date: dateStringToDate(statement.date)
+    })).sort((a, b) => b.date - a.date);
 
     return (
-        <div className="p-5" style={{display: "flex", flexDirection: "column"}}>
+        <div className="p-4 d-flex flex-column">
             <div style={style.buttonsWrapper}>
                 <Button variant="primary" type="submit" onClick={openModal}>
                     Add a statement 
@@ -222,9 +206,9 @@ function Statements() {
             </div>
             <div>
                 <div style={style.statementList}>
-                    {sortedStatements.map((statement, idx) => (
-                        <div key={statement.id} style={style.statementContainer}>
-                            <div style={{width: "100%", height: 24, borderBottom: "1px solid #0003", position: "relative"}}>
+                    {sortedStatements.map(statement => (
+                        <div key={statement.id} style={style.statement.container}>
+                            <div style={style.statement.header}>
                                 {statement.planned ? (
                                     <div style={style.planned}>
                                         <Event style={style.planned.icon} />
@@ -233,21 +217,26 @@ function Statements() {
                                         </p>
                                     </div>
                                 ) : null}
-                            <StatementDelete
-                                onClick={() => setDeleteOverlayId(statement.id)}
-                                onDelete={deleteStatement}
-                            />
+                                <StatementDelete
+                                    onClick={() => setDeleteOverlayId(statement.id)}
+                                    onDelete={() => deleteStatement(deleteOverlayId)}
+                                />
                             </div>
-                            <div style={style.statementContent}>
-                                <div style={style.statementContent.left}>
+                            <div style={style.statement.content}>
+                                <div style={style.statement.content.left}>
                                     <p className="text-muted" style={{fontSize: 15, margin: 0}}>
                                         {statement.date.toLocaleDateString("en-US")}
                                     </p>
                                     <p style={{margin: 0}}>{statement.name}</p>
                                 </div>
-                                <div style={style.statementContent.right}>
-                                    <p style={{...style.amount, color: statement.amount < 0 ? "#EA5455" : "#5D9C59"}}>
-                                        {formatCurrency(statement.amount)}
+                                <div style={style.statement.content.right}>
+                                    <p
+                                        style={{
+                                            ...style.amount,
+                                            color: statement.amount < 0 ? "#EA5455" : "#5D9C59"
+                                        }}
+                                    >
+                                        {toCurrency(statement.amount)}
                                     </p>
                                 </div>
                             </div>
@@ -263,7 +252,7 @@ function Statements() {
                     </Modal.Header>
                     <Modal.Body className="pt-3 pb-3">
                         <div className="mb-2">
-                            <Form.Group controlId="formBasicStatementName">
+                            <Form.Group controlId="name">
                                 <Form.Label className="mb-1">Name</Form.Label>
                                 <Form.Control
                                     name="name"
@@ -273,21 +262,18 @@ function Statements() {
                                 />
                             </Form.Group>
                         </div>
-                        <Form.Group className="mb-2">
+                        <Form.Group controlId="amount" className="mb-2">
                             <Form.Label className="mb-1">Amount</Form.Label>
-                            <div className="border d-flex align-items-center rounded bs-shadow" style={{padding: "8px 12px"}}>
-                                <span className="text-muted">$</span>
-                                <Form.Control
-                                    name="amount"
-                                    onChange={changeNewStatementValue}
-                                    placeholder="Enter Amount"
-                                    style={{ border: "none", padding: 0, marginLeft: 8, boxShadow: "none" }}
-                                    required
-                                />
-                            </div>
+                            <InputWithAdornment
+                                adornment="$"
+                                name="amount"
+                                onChange={changeNewStatementValue}
+                                placeholder="Enter Amount"
+                                required
+                            />
                         </Form.Group>
                         <div className="d-flex">
-                            <Form.Group controlId="formBasicStatementDate" style={{flex: 1, marginRight: 8}}>
+                            <Form.Group controlId="date" style={{flex: 1, marginRight: 8}}>
                                 <Form.Label className="mb-1">Date</Form.Label>
                                 <Form.Control
                                     name="date"
@@ -298,7 +284,7 @@ function Statements() {
                                     value={newStatement.date}
                                 />
                             </Form.Group>
-                            <Form.Group controlId="formBasicStatementFrequency" style={{flex: 1}}>
+                            <Form.Group controlId="frequency" style={{flex: 1}}>
                                 <Form.Label className="mb-1">Recurrence</Form.Label>
                                 <Form.Select
                                     onChange={changeNewStatementValue}
@@ -317,17 +303,13 @@ function Statements() {
                                 </Form.Select>
                             </Form.Group>
                         </div>
-                        <div style={{ width: "100%", marginTop: 16, height: 23 }}>
+                        <div className="col-12 mt-3" style={{ height: 23 }}>
                             {error && <p style={style.error}>{error}</p>}
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={closeModal} variant="secondary">
-                            Cancel
-                        </Button>
-                        <Button type="submit" variant="primary">
-                            Add
-                        </Button>
+                        <Button onClick={closeModal} variant="secondary">Cancel</Button>
+                        <Button type="submit" variant="primary">Add</Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

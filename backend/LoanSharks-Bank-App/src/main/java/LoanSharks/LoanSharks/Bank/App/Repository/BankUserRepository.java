@@ -8,7 +8,6 @@ import java.util.List;
 
 @Repository
 public interface BankUserRepository extends JpaRepository<BankUser,Integer> {
-    List<BankUser> findByUsername(String name);
+    BankUser findByUsername(String name);
     List<BankUser> findByUserId(Integer userId);
-
 }

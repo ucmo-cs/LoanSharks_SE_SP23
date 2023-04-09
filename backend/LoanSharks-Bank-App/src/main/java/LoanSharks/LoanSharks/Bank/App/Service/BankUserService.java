@@ -1,15 +1,11 @@
 package LoanSharks.LoanSharks.Bank.App.Service;
 
 import LoanSharks.LoanSharks.Bank.App.Domain.BankUser;
-import LoanSharks.LoanSharks.Bank.App.Domain.Statement;
 import LoanSharks.LoanSharks.Bank.App.Repository.BankUserRepository;
-import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 
 @Service
@@ -20,9 +16,10 @@ public class BankUserService {
 
     @Transactional
     public BankUser create(BankUser bankUser){
-        List<BankUser> others = this.getUserByUsername(bankUser.getUsername());
-        if (!others.isEmpty()) {
-            if(others.get(0).getUserId() == bankUser.getUserId()) {
+        BankUser other = this.getUserByUsername(bankUser.getUsername());
+
+        if (other != null) {
+            if(other.getUserId() == bankUser.getUserId()) {
                 return bankUserRepository.save(bankUser);
             } else {
                 return null;
@@ -33,16 +30,15 @@ public class BankUserService {
     }
 
     @Transactional
-    public List<BankUser> getUserByUsername(String name){
+    public BankUser getUserByUsername(String name){
         return bankUserRepository.findByUsername(name);
     }
 
     public BankUser checkLogin(String username, String password) {
         //TODO heighten security with encryption
-        List<BankUser> list = this.getUserByUsername(username);
+        BankUser user = this.getUserByUsername(username);
 
-        if (list.size() == 1 && list.get(0).getPassword().equals(password)) {
-            BankUser user = list.get(0);
+        if (user != null && user.getPassword().equals(password)) {
             String token = Jwts.builder()
                     .setId(""+user.getUserId())
                     .setSubject("login")

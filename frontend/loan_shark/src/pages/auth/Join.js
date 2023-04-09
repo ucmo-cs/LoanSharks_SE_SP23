@@ -2,57 +2,62 @@ import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { StatementService } from '../../services/StatementService';
 import { AuthService } from '../../services/AuthService';
+import InputWithAdornment from '../../components/InputWithAdornment';
   
 const ErrorForm = props => {
-    let { error } = props;
-
-    if (error) {
-        return (<div className="row text-bold pl-2 text-danger text-bold"><p>{error}</p></div>);
-    }
+    return (
+        <div className="row pl-2 text-danger mt-5 text-center font-bold" style={{ height: 24 }}>
+            <p>{props.error}</p>
+        </div>
+    );
 };
 
 function Join() {
     const [accountCreated, setAccountCreated] = useState(false);
+    const [error, setError] = useState("");
     const [initialBalance, setInitialBalance] = useState("");
-    const [user, setJoin] = useState({
-        username: '',
-        password: '',
-        error: '',
-    });
+    const [user, setUser] = useState({ username: '', password: '' });
     
     const changeValue = (e) => {
-        setJoin({ ...user, [e.target.name]: e.target.value });
+        setUser({ ...user, [e.target.name]: e.target.value });
     }
 
     const saveInitialBalance = e => {
         e.preventDefault();
 
-        const statement = {
-            name: "Initial",
-            amount: parseFloat(initialBalance),
-            date: toYYYYMMDD(new Date()),
-            planned: false,
-            frequency: null
+        const amount = parseFloat(initialBalance.replace(/,/g, "")); // .replace() is for any commas
+
+        if (!isNaN(amount)) {
+            const statement = {
+                name: "Initial",
+                amount,
+                date: toYYYYMMDD(new Date()),
+                planned: false,
+                frequency: null
+            }
+        
+            StatementService.createStatement(statement)
+                .then(function(res) {
+                    window.location.href = "/";
+                })
+                .catch(function() {
+                    
+                });
+        } else {
+            setError("Amount must be a valid number");
         }
-
-        StatementService.createStatement(statement)
-            .then(function(res) {
-                window.location.href = "/";
-            })
-            .catch(function() {
-                
-            });
     }
-
+    
     const submitUser = (e) => {
         e.preventDefault();
         
         AuthService.createUser(user.username, user.password)
             .then(() => {
+                setError("");
                 setAccountCreated(true);
             })
             .catch(() => {
-                setJoin({'error': "Error creating user, try a different username"});
+                setError("Error creating user, try a different username");
             });
     };
 
@@ -64,28 +69,29 @@ function Join() {
     
     return (
         <div className="row justify-content-lg-center h-100 p-5">
-            <div className="col-lg-5 h-100 d-flex" style={{flexDirection: "column"}}>
+            <div className="col-lg-5 h-100 d-flex flex-column">
                 <div className="text-center lg-3 mb-4">
                     <h2>Sign up</h2>
                 </div>
-                <div style={{flex: 0.8, display: "flex", justifyContent: "stretch", alignItems: "center", width: "100%"}}>
+                <div
+                    className="d-flex flex-column justify-content-center align-items-center col-12"
+                    style={{ flex: 0.8 }}
+                >
                     {accountCreated ? (
-                        <div>
-                            <p style={{textAlign: "center", fontWeight: "bold", marginBottom: 32, fontSize: 18}}>
-                                Account creation is successful. To get started, enter an initial balance.
+                        <>
+                            <p className="text-center font-bold mb-5" style={{ fontSize: 18 }}>
+                                Account creation is successful. 
+                                To get started, enter an initial balance.
                             </p>
                             <Form onSubmit={saveInitialBalance}>
-                                <div style={{display: "flex", alignItems: "center"}}>
-                                    <div className="d-flex align-items-center rounded bs-shadow" style={{padding: "8px 12px", flex: 1, border: "1px solid #ced4da"}}>
-                                        <span className="text-muted">$</span>
-                                        <Form.Control
-                                            onChange={e => setInitialBalance(e.target.value)}
-                                            placeholder="Enter starting balance"
-                                            required
-                                            style={{ border: "none", padding: 0, marginLeft: 8, boxShadow: "none" }}
-                                            value={initialBalance}
-                                        />
-                                    </div>
+                                <div className="d-flex align-items-center">
+                                    <InputWithAdornment
+                                        adornment="$"
+                                        onChange={e => setInitialBalance(e.target.value)}
+                                        placeholder="Enter starting balance"
+                                        required
+                                        value={initialBalance}
+                                    />
                                     <div className="text-center" style={{marginLeft: 16}}>
                                         <Button variant="primary" style={{height: 42}} type="submit">
                                             Save 
@@ -93,12 +99,12 @@ function Join() {
                                     </div>
                                 </div>
                             </Form>
-                            <ErrorForm error={user.error} />
-                        </div>
+                            <ErrorForm error={error} />
+                        </>
                     ) : (
                         <>
                             <Form className="col-12" onSubmit={submitUser}>
-                                <Form.Group controlId="formBasicEmailJoin">
+                                <Form.Group controlId="username" style={{marginBottom: 16}}>
                                     <Form.Label style={{marginBottom: 4}}>Username</Form.Label>
                                     <Form.Control
                                         type="text"
@@ -108,8 +114,7 @@ function Join() {
                                         required
                                     />
                                 </Form.Group>
-                                <div className="p-2"></div>
-                                <Form.Group controlId="formBasicPasswordJoin">
+                                <Form.Group controlId="password">
                                     <Form.Label style={{marginBottom: 4}}>Password</Form.Label>
                                     <Form.Control
                                         type="password"
@@ -125,7 +130,7 @@ function Join() {
                                     </Button>
                                 </div>
                             </Form>
-                            <ErrorForm error={user.error} />
+                            <ErrorForm error={error} />
                         </>
                     )}
                 </div>

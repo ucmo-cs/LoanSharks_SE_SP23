@@ -29,6 +29,7 @@ public class BankUserController {
 			bankUserService.checkLogin(user.getUsername(), user.getPassword());
 			return new ResponseEntity<>(user, HttpStatus.CREATED);
 		}
+
 		return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
 
