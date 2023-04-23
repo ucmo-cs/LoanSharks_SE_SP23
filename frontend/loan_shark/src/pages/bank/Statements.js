@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Form, Button, Modal, Popover, OverlayTrigger } from 'react-bootstrap';
-import { Event } from "@mui/icons-material";
+import { Event, Topic } from "@mui/icons-material";
 import { StatementService } from '../../services/StatementService';
 import InputWithAdornment from '../../components/InputWithAdornment';
 import { dateStringToDate, toCurrency, toYYYYMMDD } from '../../services/utils';
@@ -72,6 +72,16 @@ const style = {
         margin: "24px auto 48px",
         listStyleType: "none"
     },
+    statementHeader: {
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        width: 628, 
+        margin: "24px auto 0",
+        listStyleType: "none",
+        padding: "1px",
+        border: "1px solid #0003"
+    },
     statement: {
         container: {
             width: 310,
@@ -95,6 +105,10 @@ const style = {
                 flex: 3,
                 textAlign: "right"
             }
+        },
+        totalText:{
+            marginTop:"5px",
+            marginLeft:"4px"
         }
     }
 }
@@ -128,7 +142,8 @@ const StatementDelete = ({onClick, onDelete}) => {
     )
 }
 
-function Statements() {
+function Statements(props) {
+    var provided = props.provided;
     const [deleteOverlayId, setDeleteOverlayId] = useState(null);
     const [error, setError] = useState("");
     const [newStatement, setStatementCreate] = useState({
@@ -136,12 +151,24 @@ function Statements() {
         amount: "",
         date: toYYYYMMDD(new Date()),
         frequency: "none"
-    });
+    }); 
     const [showAddStatementModal, setShowAddStatementModal] = useState(false);
-    const [statements, setStatements] = useState([]);
-
+    const [statements, setStatementsFinal] = useState([]);
+    var total = useRef({value: 0});
+    var setStatements = function(result) {
+        total.value = 0;
+        for(var i = 0; i < result.length; i++) {
+            total.value += result[i].amount;
+        }
+        setStatementsFinal(result);
+    };
     useEffect(() => {
-        StatementService.getAllStatement().then(result => setStatements(result));
+        
+        if(!provided) {
+            StatementService.getAllStatement().then(result => setStatements(result));
+        } else {
+            setStatements(provided);
+        }
     }, []);
     
     const addStatement = (e) => {
@@ -196,13 +223,28 @@ function Statements() {
         ...statement,
         date: dateStringToDate(statement.date)
     })).sort((a, b) => b.date - a.date);
-
+    console.log(provided);
     return (
         <div className="p-4 d-flex flex-column">
-            <div style={style.buttonsWrapper}>
-                <Button variant="primary" type="submit" onClick={openModal}>
-                    Add a statement 
-                </Button>
+            {provided == undefined ? 
+                <div style={style.buttonsWrapper}>
+                    <Button variant="primary" type="submit" onClick={openModal}>
+                        Add a statement 
+                    </Button>
+                </div> : null
+            }
+            <div style={{...style.statementHeader}}>
+                <p style={style.statement.totalText}>
+                    total: 
+                </p>
+                <p
+                    style={{
+                        ...style.amount,
+                        color: total.value < 0 ? "#EA5455" : "#5D9C59"
+                    }}
+                >
+                    {toCurrency(total.value)}
+                </p>
             </div>
             <div>
                 <div style={style.statementList}>
@@ -217,10 +259,10 @@ function Statements() {
                                         </p>
                                     </div>
                                 ) : null}
-                                <StatementDelete
+                                {provided == undefined ? <StatementDelete
                                     onClick={() => setDeleteOverlayId(statement.id)}
                                     onDelete={() => deleteStatement(deleteOverlayId)}
-                                />
+                                /> : null}
                             </div>
                             <div style={style.statement.content}>
                                 <div style={style.statement.content.left}>

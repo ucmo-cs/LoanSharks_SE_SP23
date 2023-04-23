@@ -30,5 +30,9 @@ public class BankUser {
     @OneToMany(mappedBy = "bankUser")
     private List<Statement> statements = new ArrayList<>();
 
+    // transplant -> BankUserRepository?
+    @OneToMany(mappedBy = "bankUser")
+    private List<SavingGoal> savingGoals = new ArrayList<>();
+
 }
 

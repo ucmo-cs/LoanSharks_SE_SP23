@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Event, ExpandLess, ExpandMore } from "@mui/icons-material"
-import { Button, FormControl } from 'react-bootstrap';
+import { Button, FormControl, Modal} from 'react-bootstrap';
 import { StatementService } from '../../services/StatementService';
 import { dateStringToDate } from '../../services/utils';
+import { GoalService } from '../../services/GoalService';
+import Statements from './Statements';
 
 const style = {
     balanceComparisonContainer: {
@@ -190,8 +192,18 @@ const Day = ({day, month, statements, year}) => {
     // Only show the statements that occured on this day
     const stmts = statements.filter(s => s.date.toDateString() === date.toDateString())
 
+    const [modalState, setModalState] = useState({view:stmts.length > 0});
+    const closeModal = function() {
+        setModalState({view:false});
+    };
+    const selectModal = function() {
+        if(stmts.length > 0) {
+            setModalState({view:!modalState.view});
+        }
+    }
     return (
         <td
+            onClick={selectModal}
             style={{
                 ...style.day, 
                 border: visible ? "1px solid #ccc" : "", 
@@ -233,6 +245,15 @@ const Day = ({day, month, statements, year}) => {
                     ))}
                 </div>
             </div>
+            <Modal dialogClassName="extended" show={modalState.view} onHide={closeModal}>
+                <Statements provided={stmts.map(function(statement) {
+                    return {
+                        ...statement,
+                        date: statement.date.toDateString()
+                    };
+                    
+                })}></Statements>
+            </Modal>
         </td>
     )
 }
@@ -251,7 +272,7 @@ function MonthlyCalendar() {
 
     // Placeholder data
     const [savingsGoals, setSavingsGoals] = useState([
-        {month: 2, year: 2023, goal: 300},
+       /* {month: 2, year: 2023, goal: 300},
         {month: 3, year: 2023, goal: 500},
         {month: 4, year: 2023, goal: 300},
         {month: 5, year: 2023, goal: 700},
@@ -259,7 +280,7 @@ function MonthlyCalendar() {
         {month: 8, year: 2023, goal: 90},
         {month: 11, year: 2023, goal: 100},
         {month: 1, year: 2024, goal: 250},
-        {month: 2, year: 2024, goal: 375}
+        {month: 2, year: 2024, goal: 375} */
     ]);
 
     const past = year < now.getFullYear() || (month < now.getMonth() && year === now.getFullYear());
@@ -272,28 +293,26 @@ function MonthlyCalendar() {
                 date: dateStringToDate(statement.date)
             })));
         });
-    }, []);
-
-    // When the month or year changes, show the corresponding monthly savings goal
-    useEffect(() => {
-        const savingsGoal = savingsGoals.find(sg => sg.month === month && sg.year === year);
-
-        if (savingsGoal) {
-            setMonthlySavingsGoal(savingsGoal.goal);
-            setMonthlySavingsGoalText(savingsGoal.goal.toFixed(2));
-        } else {
-            setMonthlySavingsGoal(0);
-            setMonthlySavingsGoalText("");
-        }
-    }, [month, year])
-
-    useEffect(() => {
-        const savingsGoal = savingsGoals.find(sg => sg.month === month && sg.year === year);
-        const balance = 500;
-
-        localStorage.setItem("monthlyGoal", savingsGoal.goal);
-        localStorage.setItem("monthlyBalance", balance);
-    }, [])
+        GoalService.getAllGoals().then(result => {
+            setSavingsGoals(result.map(goal => ({
+                ...savingsGoals,
+                id: goal.id,
+                goal: parseFloat(goal.amount), 
+                year: parseInt(goal.time_year),
+                month: parseInt(goal.time_month)
+            })));
+            const savingsGoal = result.find(sg => parseInt(sg.time_month) === month && parseInt(sg.time_year) === year);
+            
+            if (savingsGoal) {
+                setMonthlySavingsGoal(parseFloat(savingsGoal.amount)); //goal if it was local object
+                setMonthlySavingsGoalText(parseFloat(savingsGoal.amount).toFixed(2));
+            } else {
+                setMonthlySavingsGoal(0);
+                setMonthlySavingsGoalText("");
+            }
+        });
+        
+    }, [month, year]);
 
     const getMonthName = (m) => { // Months in JS are zero-indexed (why?!?!!)
         const monthNames = [
@@ -351,21 +370,31 @@ function MonthlyCalendar() {
     }
 
     const save = () => {
-        const newMonthlySavingsGoal = parseFloat(monthlySavingsGoalText);
+        var newMonthlySavingsGoal = parseFloat(monthlySavingsGoalText);
 
         if (!isNaN(newMonthlySavingsGoal) && isFinite(newMonthlySavingsGoal)) {
             setMonthlySavingsGoal(newMonthlySavingsGoal);
 
             const goals = savingsGoals.slice();
             const idx = goals.findIndex(sg => sg.month === month && sg.year === year);
-
-            if (idx > -1)
+            var goalSave;
+            if (idx > -1) {
                 goals[idx] = {...goals[idx], goal: newMonthlySavingsGoal};
-            else
-                goals.push({month, year, goal: newMonthlySavingsGoal});
-
-            setSavingsGoals(goals);
-            localStorage.setItem("monthlyGoal", JSON.stringify(goals[idx].goal));
+                goalSave = goals[idx];
+            }
+            else {
+                goalSave = {month, year, goal: newMonthlySavingsGoal};
+                goals.push(goalSave);
+            }
+            GoalService.createGoal({
+                id: goalSave.id || undefined,
+                time_month: goalSave.month,
+                time_year: goalSave.year,
+                amount: goalSave.goal,
+            }).then((value)=> {
+                goalSave.id = value.id;
+                setSavingsGoals(goals);
+            });
         }
 
         setEditSavingsGoal(false);

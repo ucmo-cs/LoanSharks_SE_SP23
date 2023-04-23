@@ -70,3 +70,7 @@
 #main-navbar2 {
   background-color: #006749!important;
 }
+.extended {
+  width: 668px!important;    /* Occupy the 90% of the screen width */
+  max-width: 668px!important;
+} 
