@@ -13,14 +13,14 @@ spring:
       path: /h2-console
 
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:~/testdb
-    username: sa
-    password:
-    #driver-class-name: com.mysql.jdbc.Driver
-    #url: jdbc:mysql://localhost:3306/loan_sharks
-    #username: spring_admin
-    #password: change12345678911553
+    #driver-class-name: org.h2.Driver
+    #url: jdbc:h2:file:~/testdb
+    #username: sa
+    #password:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/loan_sharks
+    username: spring_admin
+    password: change12345678911553
   jpa:
     show-sql: true
     hibernate:
