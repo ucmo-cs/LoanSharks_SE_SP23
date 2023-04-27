@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface SavingGoalRepository extends JpaRepository<SavingGoal,Integer> {
     @Query(
-            value = "SELECT * FROM saving_goal WHERE USER_ID = ?1 LIMIT ?2 OFFSET ?3",
+            value = "SELECT * FROM saving_goal WHERE user_id = ?1 LIMIT ?2 OFFSET ?3",
             nativeQuery = true
     )
     public List<SavingGoal> getAll(int user_id, int limit, int offset);
