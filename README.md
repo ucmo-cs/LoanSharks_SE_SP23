@@ -30,11 +30,13 @@ on windows, after install, you will need to look up mysql command line.
 on linux, after install, type `sudo mysql`
 
 in SQL command line, do this
-
+```sql
 create database loan_sharks; -- Creates the new database
-create user 'spring_admin'@'%' identified by 'change12345678911553'; -- Creates the user
-grant all on loan_sharks.* to 'spring_admin'@'%'; -- Gives all privileges to the new user on the newly created database
 
+create user 'spring_admin'@'%' identified by 'change12345678911553'; -- Creates the user
+
+ grant all on loan_sharks.* to 'spring_admin'@'%'; -- Gives all privileges to the new user on the newly created database
+```
 
 
 # how to use Service Function on UI side
