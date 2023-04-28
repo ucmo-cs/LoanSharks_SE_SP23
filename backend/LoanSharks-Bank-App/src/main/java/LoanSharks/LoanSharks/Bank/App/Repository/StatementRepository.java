@@ -14,7 +14,7 @@ public interface StatementRepository extends JpaRepository<Statement, Integer> {
     public List<Statement> findByName(String name);
 
     @Query(
-            value = "SELECT * FROM statement WHERE userId = ?1 AND (DATE < ?2 && ?3 <= DATE) ORDER BY DATE",
+            value = "SELECT * FROM statement WHERE user_id = ?1 AND (DATE < ?2 && ?3 <= DATE) ORDER BY DATE",
             nativeQuery = true
     )
     public List<Statement> findInDateRange(int user_id, Date start, Date end);
