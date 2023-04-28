@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Button, Modal, Popover, OverlayTrigger } from 'react-bootstrap';
-import { Event, Topic } from "@mui/icons-material";
+import { Event } from "@mui/icons-material";
 import { StatementService } from '../../services/StatementService';
 import InputWithAdornment from '../../components/InputWithAdornment';
 import { dateStringToDate, toCurrency, toYYYYMMDD } from '../../services/utils';
@@ -10,14 +10,17 @@ const style = {
         margin: 0,
         fontSize: 24,
         textAlign: "right",
-        fontWeight: "600"
+        fontWeight: "600",
+        lineHeight: 1
+    },
+    balance: { fontWeight: "bold", fontSize: 32, lineHeight: 1, margin: 0 },
+    balanceAfterStatement: {
+        fontSize: 15,
+        fontWeight: "bold",
+        color: "#000a"
     },
     buttonsWrapper: {
         textAlign: "center"
-    },
-    balance: {
-        fontSize: 15, 
-        fontWeight: "500"
     },
     date: {
         flex: 1, 
@@ -69,7 +72,7 @@ const style = {
         flexWrap: "wrap",
         justifyContent: "space-between",
         width: 628, 
-        margin: "24px auto 48px",
+        margin: "0 auto 48px",
         listStyleType: "none"
     },
     statementHeader: {
@@ -97,7 +100,7 @@ const style = {
         content: {
             display: "flex", 
             alignItems: "center",
-            padding: "2px 8px",
+            padding: "6px 8px 2px",
             left: {
                 flex: 7
             },
@@ -105,12 +108,8 @@ const style = {
                 flex: 3,
                 textAlign: "right"
             }
-        },
-        totalText:{
-            marginTop:"5px",
-            marginLeft:"4px"
         }
-    }
+    },
 }
 
 const StatementDelete = ({onClick, onDelete}) => {
@@ -142,8 +141,8 @@ const StatementDelete = ({onClick, onDelete}) => {
     )
 }
 
-function Statements(props) {
-    var provided = props.provided;
+function Statements() {
+    const [balance, setBalance] = useState(0);
     const [deleteOverlayId, setDeleteOverlayId] = useState(null);
     const [error, setError] = useState("");
     const [newStatement, setStatementCreate] = useState({
@@ -153,23 +152,29 @@ function Statements(props) {
         frequency: "none"
     }); 
     const [showAddStatementModal, setShowAddStatementModal] = useState(false);
-    const [statements, setStatementsFinal] = useState([]);
-    var total = useRef({value: 0});
-    var setStatements = function(result) {
-        total.value = 0;
-        for(var i = 0; i < result.length; i++) {
-            total.value += result[i].amount;
-        }
-        setStatementsFinal(result);
-    };
+    const [statements, setStatements] = useState([]);
+    const [statementsData, setStatementsData] = useState([]);
+
     useEffect(() => {
-        
-        if(!provided) {
-            StatementService.getAllStatement().then(result => setStatements(result));
-        } else {
-            setStatements(provided);
-        }
+        StatementService.getAllStatement().then(result => setStatementsData(result));
     }, []);
+
+    useEffect(() => {
+        let newBalance = 0;
+
+        const sorted = statementsData
+            .map(statement => ({ ...statement, date: dateStringToDate(statement.date)}))
+            .sort((a, b) => a.date - b.date)
+            .map(statement => {
+                newBalance += statement.amount;
+                return { ...statement, balance: newBalance };
+            });
+
+        sorted.reverse();
+
+        setBalance(newBalance);
+        setStatements(sorted);
+    }, [statementsData])
     
     const addStatement = (e) => {
         e.preventDefault();
@@ -184,10 +189,9 @@ function Statements(props) {
         StatementService.createStatement(statement)
             .then(function(res) {
                 closeModal();
-                setStatements([...statements, res]);
+                setStatementsData([...statementsData, res]);
             })
             .catch(function() {
-                //TODO, error message inside Modal.
                 setError("A backend error occurred.");
             });
     }
@@ -209,46 +213,35 @@ function Statements(props) {
     const deleteStatement = (id) => {
         StatementService.deleteStatement(id)
             .then((res) => {
-                setStatements(statements.filter(statement => statement.id !== id));
+                setStatementsData(statementsData.filter(statement => statement.id !== id));
                 setDeleteOverlayId(null);
             });
     }
-       
+
     const openModal = () => {
         setError("");
         setShowAddStatementModal(true);
     }
 
-    const sortedStatements = statements.slice().map(statement => ({
-        ...statement,
-        date: dateStringToDate(statement.date)
-    })).sort((a, b) => b.date - a.date);
-    console.log(provided);
     return (
         <div className="p-4 d-flex flex-column">
-            {provided == undefined ? 
-                <div style={style.buttonsWrapper}>
-                    <Button variant="primary" type="submit" onClick={openModal}>
-                        Add a statement 
-                    </Button>
-                </div> : null
-            }
-            <div style={{...style.statementHeader}}>
-                <p style={style.statement.totalText}>
-                    total: 
-                </p>
-                <p
-                    style={{
-                        ...style.amount,
-                        color: total.value < 0 ? "#EA5455" : "#5D9C59"
-                    }}
-                >
-                    {toCurrency(total.value)}
-                </p>
+            <div
+                className="d-flex justify-content-between align-items-center mx-auto mb-4"
+                style={{ width: 628 }}
+            >
+                <div>
+                    <p style={{ marginBottom: 0 }}>Balance</p>
+                    <p style={style.balance}>
+                        {toCurrency(balance)}
+                    </p>
+                </div>
+                <Button variant="primary" type="submit" onClick={openModal}>
+                    Add a statement 
+                </Button>
             </div>
             <div>
                 <div style={style.statementList}>
-                    {sortedStatements.map(statement => (
+                    {statements.map(statement => (
                         <div key={statement.id} style={style.statement.container}>
                             <div style={style.statement.header}>
                                 {statement.planned ? (
@@ -259,10 +252,10 @@ function Statements(props) {
                                         </p>
                                     </div>
                                 ) : null}
-                                {provided == undefined ? <StatementDelete
+                                <StatementDelete
                                     onClick={() => setDeleteOverlayId(statement.id)}
                                     onDelete={() => deleteStatement(deleteOverlayId)}
-                                /> : null}
+                                />
                             </div>
                             <div style={style.statement.content}>
                                 <div style={style.statement.content.left}>
@@ -280,6 +273,9 @@ function Statements(props) {
                                     >
                                         {toCurrency(statement.amount)}
                                     </p>
+                                    <span style={style.balanceAfterStatement}>
+                                        {toCurrency(statement.balance)}
+                                    </span>
                                 </div>
                             </div>
                         </div>     

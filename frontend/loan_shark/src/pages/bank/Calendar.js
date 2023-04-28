@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Event, ExpandLess, ExpandMore } from "@mui/icons-material"
 import { Button, FormControl, Modal} from 'react-bootstrap';
 import { StatementService } from '../../services/StatementService';
-import { dateStringToDate } from '../../services/utils';
+import { dateStringToDate, toCurrency } from '../../services/utils';
 import { GoalService } from '../../services/GoalService';
-import Statements from './Statements';
 
 const style = {
     balanceComparisonContainer: {
@@ -119,6 +118,24 @@ const style = {
         fontSize: 32,
         color: "#777"
     },
+    modalStatement: {
+        amount: { fontSize: 24, fontWeight: "500", margin: 0 },
+        container: {
+            display: "flex", 
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+            height: 60,
+            marginBottom: 0,
+            padding: "4px 16px",
+            borderBottom: "1px solid #0002"
+        },
+        name: { fontSize: 18, fontWeight: "500", margin: 0 },
+        recurrence: {
+            frequency: { textTransform: "capitalize", margin: 0, fontSize: 15 },
+            icon: { fontSize: 18, marginRight: 8 }
+        }
+    },
     monthControlContainer: {
         flexShrink: 0,
         textAlign: "center",
@@ -179,8 +196,16 @@ const style = {
     }
 }
 
+const getMonthName = (m) => { // Months in JS are zero-indexed (why?!?!!)
+    return [
+        "January", "February", "March", "April", "May", "June", "July",
+        "August", "September", "October", "November", "December"
+    ][m];
+}
 
 const Day = ({day, month, statements, year}) => {
+    const [showModal, setShowModal] = useState(false);
+
     const date = new Date(year, month, day);
     const now = new Date();
 
@@ -192,69 +217,83 @@ const Day = ({day, month, statements, year}) => {
     // Only show the statements that occured on this day
     const stmts = statements.filter(s => s.date.toDateString() === date.toDateString())
 
-    const [modalState, setModalState] = useState({view:stmts.length > 0});
-    const closeModal = function() {
-        setModalState({view:false});
-    };
-    const selectModal = function() {
-        if(stmts.length > 0) {
-            setModalState({view:!modalState.view});
-        }
-    }
     return (
-        <td
-            onClick={selectModal}
-            style={{
-                ...style.day, 
-                border: visible ? "1px solid #ccc" : "", 
-                visibility: !visible ? "hidden" : "visible",
-            }}
-        >
-            <div role="button" style={style.dayContent}>
-                <span
-                    style={{
-                        ...style.dayContent.number,
-                        color: today ? "#0d6efd" : "", 
-                        fontWeight: today ? "bold" : "normal",
-                        opacity: past ? 0.5 : 1
-                    }}
-                >
-                    {visible ? day : ""}
-                </span>
-                <div style={style.dayStatementsContainer}>
-                    {stmts.map((s, idx) => (
-                        <div
-                            key={idx}
-                            style={{
-                                ...style.dayStatement,
-                                backgroundColor: s.amount < 0 ? "#f00" : "#0b0"
-                            }}
-                        >
-                            {s.planned && <Event style={style.dayStatement.event} />}
-                            <div style={style.dayStatementContent}>
-                                <div style={style.dayStatementContent.textContainer}>
-                                    <p style={style.dayStatementContent.text}>{s.name}</p>
-                                </div>
-                                <div style={{...style.dayStatementContent.textContainer, height: 18}}>
-                                    <p style={{...style.dayStatementContent.text, fontWeight: "bold"}}>
-                                        {s.amount.toFixed(2)}
-                                    </p>
+        <>
+            <td
+                onClick={() => setShowModal(stmts.length > 0)}
+                style={{
+                    ...style.day, 
+                    border: visible ? "1px solid #ccc" : "", 
+                    visibility: !visible ? "hidden" : "visible",
+                }}
+            >
+                <div role="button" style={style.dayContent}>
+                    <span
+                        style={{
+                            ...style.dayContent.number,
+                            color: today ? "#0d6efd" : "", 
+                            fontWeight: today ? "bold" : "normal",
+                            opacity: past ? 0.5 : 1
+                        }}
+                    >
+                        {visible ? day : ""}
+                    </span>
+                    <div style={style.dayStatementsContainer}>
+                        {stmts.map((s, idx) => (
+                            <div
+                                key={idx}
+                                style={{
+                                    ...style.dayStatement,
+                                    backgroundColor: s.amount < 0 ? "#f00" : "#0b0"
+                                }}
+                            >
+                                {s.planned && <Event style={style.dayStatement.event} />}
+                                <div style={style.dayStatementContent}>
+                                    <div style={style.dayStatementContent.textContainer}>
+                                        <p style={style.dayStatementContent.text}>{s.name}</p>
+                                    </div>
+                                    <div style={{...style.dayStatementContent.textContainer, height: 18}}>
+                                        <p style={{...style.dayStatementContent.text, fontWeight: "bold"}}>
+                                            {s.amount.toFixed(2)}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
+                        ))}
+                    </div>
+                </div>
+            </td>
+            <Modal show={showModal} onHide={() => setShowModal(false)}>
+                <Modal.Header closeButton style={{padding: "8px 16px"}}>
+                    <Modal.Title>Statements for {getMonthName(month)} {day}, {year}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{height: 475, overflow: "auto", padding: 0}}>
+                    {stmts.map((s, idx) => (
+                        <div key={idx} style={style.modalStatement.container}>
+                            <div>
+                                <p style={style.modalStatement.name}>{s.name}</p>
+                                {s.planned ? (
+                                    <div className="d-flex align-items-center">
+                                        <Event style={style.modalStatement.recurrence.icon} />
+                                        <p style={style.modalStatement.recurrence.frequency}>
+                                            {s.frequency} transaction
+                                        </p>
+                                    </div>
+                                ) : null}
+                            </div>
+                            <p 
+                                style={{
+                                    ...style.modalStatement.amount, 
+                                    color: s.amount < 0 ? "#EA5455" : "#5D9C59"
+                                }}
+                            >
+                                {toCurrency(s.amount)}
+                            </p>
                         </div>
                     ))}
-                </div>
-            </div>
-            <Modal dialogClassName="extended" show={modalState.view} onHide={closeModal}>
-                <Statements provided={stmts.map(function(statement) {
-                    return {
-                        ...statement,
-                        date: statement.date.toDateString()
-                    };
-                    
-                })}></Statements>
+                </Modal.Body>
             </Modal>
-        </td>
+        </>
     )
 }
 
@@ -270,18 +309,7 @@ function MonthlyCalendar() {
     const [monthlySavingsGoal, setMonthlySavingsGoal] = useState(0);
     const [statements, setStatements] = useState([]);
 
-    // Placeholder data
-    const [savingsGoals, setSavingsGoals] = useState([
-       /* {month: 2, year: 2023, goal: 300},
-        {month: 3, year: 2023, goal: 500},
-        {month: 4, year: 2023, goal: 300},
-        {month: 5, year: 2023, goal: 700},
-        {month: 7, year: 2023, goal: 600},
-        {month: 8, year: 2023, goal: 90},
-        {month: 11, year: 2023, goal: 100},
-        {month: 1, year: 2024, goal: 250},
-        {month: 2, year: 2024, goal: 375} */
-    ]);
+    const [savingsGoals, setSavingsGoals] = useState([]);
 
     const past = year < now.getFullYear() || (month < now.getMonth() && year === now.getFullYear());
 
@@ -293,6 +321,7 @@ function MonthlyCalendar() {
                 date: dateStringToDate(statement.date)
             })));
         });
+        
         GoalService.getAllGoals().then(result => {
             setSavingsGoals(result.map(goal => ({
                 ...savingsGoals,
@@ -313,15 +342,6 @@ function MonthlyCalendar() {
         });
         
     }, [month, year]);
-
-    const getMonthName = (m) => { // Months in JS are zero-indexed (why?!?!!)
-        const monthNames = [
-            "January", "February", "March", "April", "May", "June", "July",
-            "August", "September", "October", "November", "December"
-        ]
-
-        return monthNames[m];
-    }
 
     const getNextMonth = () => {
         const newMonth = (month + 1) % 12;
@@ -485,15 +505,15 @@ function MonthlyCalendar() {
                         <div style={style.balanceComparisonContent}>
                             <div style={style.balanceComparisonContent.left}>
                                 <p style={style.balanceComparisonContent.heading}>Target Balance</p>
-                                <h5>${targetBalance.toFixed(2)}</h5>
+                                <h5>{toCurrency(targetBalance)}</h5>
                             </div>
                             <div style={style.balanceComparisonContent.right}>
                                 <p style={style.balanceComparisonContent.heading}>Actual Balance</p>
-                                <h5>${balance.toFixed(2)}</h5>
+                                <h5>{toCurrency(balance)}</h5>
                             </div>
                         </div>
                         <p style={{...style.balanceDiffText, color: balanceDiff >= 0 ? "#0b0" : "#f70"}}>
-                            {balanceDiff >= 0 ? "Exceeding" : "Below"} Budget by ${Math.abs(balanceDiff).toFixed(2)}
+                            {balanceDiff >= 0 ? "Exceeding" : "Below"} Budget by {toCurrency(balanceDiff)}
                         </p>
                     </div>
                 </div>

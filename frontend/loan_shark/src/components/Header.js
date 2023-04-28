@@ -1,5 +1,4 @@
-import react from 'react';
-import {Button, Container, Nav, Navbar } from 'react-bootstrap';
+import { Container, Nav, Navbar } from 'react-bootstrap';
 import {Link} from 'react-router-dom';
 
 import { AuthService } from '../services/AuthService';
@@ -7,12 +6,33 @@ import { AuthService } from '../services/AuthService';
 function Options() {
   if(AuthService.isLoggedIn()) {
     return <>
-      <Link to ="/Calendar" onClick={() => window.location.href = "/Calendar"} className = "navbar-brand">Calendar</Link>
-      <Link to ="/statements" onClick={() => window.location.href = "/statements"} className = "navbar-brand">Statements</Link>
-      <Link to ="/calculator" onClick={() => window.location.href = "/calculator"} className = "navbar-brand">Calculator</Link>
-  
-      <Nav className="me-auto">
-        <Link to ="#" onClick={() => AuthService.logout()} className = "nav-link">Logout</Link>
+      <Nav className="flex col-12">
+        <Link 
+          to ="/Calendar" onClick={() => window.location.href = "/Calendar"}
+          className="navbar-brand"
+        >
+          Calendar
+        </Link>
+        <Link 
+          to ="/statements" onClick={() => window.location.href = "/statements"}
+          className="navbar-brand mx-2"
+        >
+          Statements
+        </Link>
+        <Link 
+          to ="/calculator" onClick={() => window.location.href = "/calculator"}
+          className="navbar-brand mx-3"
+        >
+          Calculator
+        </Link>
+        <Link 
+          to="#" 
+          onClick={() => AuthService.logout()} 
+          className="nav-link" 
+          style={{ marginLeft: "auto" }}
+        >
+          Logout
+        </Link>
       </Nav>
    </>
   }
